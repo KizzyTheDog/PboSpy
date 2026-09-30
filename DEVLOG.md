@@ -2,6 +2,15 @@
 
 Newest first. Each commit adds an entry: what changed, why, and what was checked.
 
+## 2026-09-30 · v2.1.1 · export fixes, viewport modes
+
+- **Export material names match the textures** (`exterior_misc2_co` instead of `m01_exteriormisc2co`), scrambled names decoded. The Blender Auto Texture Linker matched nothing before because of those names; UVs were never changed by the split. Normal maps are written as `<name>_normal`, shine as `<name>_orm`.
+- **Less shiny exports**: `_smdi` green was used as "metallic", which made most surfaces black chrome. Metallic is now 0 and `_smdi` only lowers roughness (floor 0.3).
+- **Scrambled texture names** are also looked up decoded, the way they're spelled once extracted.
+- **3D preview view modes** like Blender: Wireframe, Solid, Material, Rendered (remembered). They replace the Textures and Detail maps checkboxes.
+- **FPS and stats** bottom right of the 3D preview (FPS, triangles shown, parts, textures, memory). Settings > "Show FPS and model stats", on by default.
+- Checked: PGS_MH47G Block_1 exports to GLB with 56 of 57 materials textured (the other is `empty_ca`, blank by design); wireframe and stats on cca.p3d.
+
 ## 2026-09-30 · repository live
 
 - Private repo created at KizzyTheDog/PboSpy and release **v2.1.0** published (`PboSpy-2.1.0.zip`, 5.1 MB, without BisDll.dll or .pdb files).

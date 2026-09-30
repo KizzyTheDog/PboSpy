@@ -4,7 +4,7 @@
 		<OutputType>WinExe</OutputType>
 		<TargetFramework>net8.0-windows</TargetFramework>
 		<LangVersion>latest</LangVersion>
-		<Version>2.1.0</Version>
+		<Version>2.1.1</Version>
 		<Product>PboSpy</Product>
 		<Description>PBO explorer and converter for Arma 3</Description>
 		<UseWPF>true</UseWPF>

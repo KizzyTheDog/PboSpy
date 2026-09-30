@@ -328,7 +328,20 @@ internal sealed class TextureResolver
         return null;
     }
 
+    // Scrambled names are stored as UTF-8 bytes read as Latin-1; once extracted to disk they're real letters,
+    // so both spellings are tried.
     private TextureResult Locate(string key, string[] variants, int maxSize, bool keepAlpha, bool decode = true)
+    {
+        var found = LocateOne(key, variants, maxSize, keepAlpha, decode);
+        var decoded = Normalize(PboSpy.Modules.Deobfuscate.Core.NameRecovery.FixEncoding(key));
+        if (found.Found || found.File != null || !string.IsNullOrEmpty(found.Location) || decoded == key)
+        {
+            return found;
+        }
+        return LocateOne(decoded, variants, maxSize, keepAlpha, decode);
+    }
+
+    private TextureResult LocateOne(string key, string[] variants, int maxSize, bool keepAlpha, bool decode)
     {
         foreach (var candidate in WithVariants(key, variants))
         {

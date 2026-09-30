@@ -35,6 +35,7 @@ public class ApplicationSettingsViewModel : PropertyChangedBase, ISettingsEditor
         ShowFileSizes = _settings.ShowFileSizes;
         SingleClickPreview = _settings.SingleClickPreview;
         AutoUpdate = _settings.AutoUpdate;
+        PreviewStats = _settings.PreviewStats;
         UpdateToken = _settings.UpdateToken;
         HideFilteredFiles = _settings.HideFilteredFiles;
         ConfirmBeforeOverwrite = _settings.ConfirmBeforeOverwrite;
@@ -111,6 +112,8 @@ public class ApplicationSettingsViewModel : PropertyChangedBase, ISettingsEditor
     public bool SingleClickPreview { get; set; }
 
     public bool AutoUpdate { get; set; }
+
+    public bool PreviewStats { get; set; }
 
     public string UpdateToken { get; set; }
 
@@ -253,6 +256,7 @@ public class ApplicationSettingsViewModel : PropertyChangedBase, ISettingsEditor
         _settings.ShowFileSizes = ShowFileSizes;
         _settings.SingleClickPreview = SingleClickPreview;
         _settings.AutoUpdate = AutoUpdate;
+        _settings.PreviewStats = PreviewStats;
         _settings.UpdateToken = UpdateToken ?? "";
         _settings.HideFilteredFiles = HideFilteredFiles;
         _settings.ConfirmBeforeOverwrite = ConfirmBeforeOverwrite;

@@ -92,3 +92,14 @@
   Settings are remembered. MCP `p3d_export` takes `max_texture`, `split_at` and `rvmat_folder`.
   Checked on cca.p3d in Blender: all four formats import with 224,208 triangles, 35 objects, none over 20,000, same size and orientation.
 - Added: TGA as an image output format in Convert (Roblox and Blender read it). With PNG, JPG and BMP, and WAV/MP3/OGG/FLAC for audio, every image and sound type Roblox imports is covered.
+
+## v2.1.1
+
+- **Export material names match the textures** (`exterior_misc2_co` instead of `m01_exteriormisc2co`), scrambled names decoded. The Blender Auto Texture Linker matched nothing before because of those names; UVs were never changed by the split. Normal maps are written as `<name>_normal`, shine as `<name>_orm`.
+- **Less shiny exports**: `_smdi` green was used as "metallic", which made most surfaces black chrome. Metallic is now 0 and `_smdi` only lowers roughness (floor 0.3).
+- **Scrambled texture names** are also looked up decoded, the way they're spelled once extracted.
+- **3D preview view modes** like Blender: Wireframe, Solid, Material, Rendered (remembered). They replace the Textures and Detail maps checkboxes.
+- **FPS and stats** bottom right of the 3D preview (FPS, triangles shown, parts, textures, memory). Settings > "Show FPS and model stats", on by default.
+- Checked: PGS_MH47G Block_1 exports to GLB with 56 of 57 materials textured (the other is `empty_ca`, blank by design); wireframe and stats on cca.p3d.
+
+- Removed: the "Textures" and "Detail maps" checkboxes in the 3D preview (replaced by the view modes).

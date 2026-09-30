@@ -612,5 +612,11 @@
   "Update.TokenTip": "GitHub CLI(gh)가 설치·로그인되어 있지 않을 때만 필요합니다. 릴리스가 비공개 저장소에 있습니다. 읽기 전용 토큰이면 됩니다.",
   "Update.UpToDate": "PboSpy {0}이(가) 최신 버전입니다.",
   "Update.Ready": "PboSpy {0}을(를) 받았습니다 (현재 {1}).\n\n지금 다시 시작해 업데이트할까요?\n아니요: PboSpy를 닫을 때 업데이트합니다.",
-  "Update.Failed": "업데이트를 확인하지 못했습니다: {0}"
+  "Update.Failed": "업데이트를 확인하지 못했습니다: {0}",
+  "P3dView.Wireframe": "와이어프레임",
+  "P3dView.Solid": "솔리드",
+  "P3dView.MaterialPreview": "머티리얼",
+  "P3dView.Rendered": "렌더",
+  "P3dView.Perf": "{0} FPS · 삼각형 {1} · 부분 {2} · 텍스처 {3} · {4} MB",
+  "Settings.PreviewStats": "3D 미리 보기에 FPS와 모델 정보 표시"
 }

@@ -41,6 +41,171 @@ public partial class P3dPreviewView : UserControl
     {
         InitializeComponent();
         DataContextChanged += OnDataContextChanged;
+        Loaded += (_, _) =>
+        {
+            (AppSettings.Default.PreviewShading switch { "wire" => ShadeWire, "solid" => ShadeSolid, "material" => ShadeMaterial, _ => ShadeRendered }).IsChecked = true;
+            StartStats();
+        };
+        Unloaded += (_, _) => StopStats();
+    }
+
+    // ---- view modes, like Blender's viewport shading ----
+
+    private string _shading = "rendered";
+    private readonly Dictionary<ModelPart, GeometryModel3D> _wires = new();
+    private int _wireVersion;
+
+    private void OnShading(object sender, RoutedEventArgs e)
+    {
+        _shading = sender == ShadeWire ? "wire" : sender == ShadeSolid ? "solid" : sender == ShadeMaterial ? "material" : "rendered";
+        AppSettings.Default.PreviewShading = _shading;
+        AppSettings.Default.Save();
+        if (_vm != null)
+        {
+            _vm.ShowTextures = _shading is "material" or "rendered";
+            _vm.ShowDetailMaps = _shading == "rendered";
+        }
+        ApplyShading();
+    }
+
+    private async void ApplyShading()
+    {
+        var wire = _shading == "wire";
+        if (!wire)
+        {
+            if (!SceneRoot.Children.Contains(Parts))
+            {
+                SceneRoot.Children.Add(Parts);
+            }
+            Wires.Children.Clear();
+            return;
+        }
+        SceneRoot.Children.Remove(Parts);
+        var version = ++_wireVersion;
+        var parts = _models.Select(m => m.Part).ToList();
+        var width = _radius * 0.0015;
+        var missing = parts.Where(p => !_wires.ContainsKey(p)).ToList();
+        if (missing.Count > 0)
+        {
+            Overlay.Text = Loc.T("P3dView.Loading");
+            var built = await Task.Run(() => missing.Select(p => (p, WireMesh(p.Mesh, width))).ToList());
+            Overlay.Text = "";
+            var brush = TryFindResource("PboSpy.Accent") as Brush ?? Brushes.Orange;
+            var material = new MaterialGroup();
+            material.Children.Add(new DiffuseMaterial(Brushes.Black));
+            material.Children.Add(new EmissiveMaterial(brush));
+            material.Freeze();
+            foreach (var (part, mesh) in built)
+            {
+                var model = new GeometryModel3D(mesh, material) { BackMaterial = material };
+                if (part.Offset.LengthSquared > 0)
+                {
+                    model.Transform = new TranslateTransform3D(part.Offset);
+                }
+                _wires[part] = model;
+            }
+        }
+        if (version != _wireVersion || _shading != "wire")
+        {
+            return;
+        }
+        Wires.Children.Clear();
+        foreach (var (part, model) in _models)
+        {
+            if (_wires.TryGetValue(part, out var wireModel) && model.Material != null)
+            {
+                Wires.Children.Add(wireModel);
+            }
+        }
+    }
+
+    // WPF 3D has no line drawing: every edge becomes a thin strip lying on its face.
+    private static MeshGeometry3D WireMesh(MeshGeometry3D source, double width)
+    {
+        var positions = new Point3DCollection();
+        var indices = new Int32Collection();
+        var seen = new HashSet<long>();
+        var idx = source.TriangleIndices;
+        var p = source.Positions;
+        for (var t = 0; t + 2 < idx.Count; t += 3)
+        {
+            var normal = Vector3D.CrossProduct(p[idx[t + 1]] - p[idx[t]], p[idx[t + 2]] - p[idx[t]]);
+            if (normal.LengthSquared < 1e-18)
+            {
+                continue;
+            }
+            normal.Normalize();
+            for (var k = 0; k < 3; k++)
+            {
+                int a = idx[t + k], b = idx[t + (k + 1) % 3];
+                if (!seen.Add(a < b ? ((long)a << 32) | (uint)b : ((long)b << 32) | (uint)a))
+                {
+                    continue;
+                }
+                var along = p[b] - p[a];
+                var side = Vector3D.CrossProduct(normal, along);
+                if (side.LengthSquared < 1e-18)
+                {
+                    continue;
+                }
+                side.Normalize();
+                side *= width;
+                var lift = normal * width * 0.5;
+                var start = positions.Count;
+                positions.Add(p[a] - side + lift);
+                positions.Add(p[a] + side + lift);
+                positions.Add(p[b] + side + lift);
+                positions.Add(p[b] - side + lift);
+                indices.Add(start);
+                indices.Add(start + 1);
+                indices.Add(start + 2);
+                indices.Add(start);
+                indices.Add(start + 2);
+                indices.Add(start + 3);
+            }
+        }
+        var mesh = new MeshGeometry3D { Positions = positions, TriangleIndices = indices };
+        mesh.Freeze();
+        return mesh;
+    }
+
+    // ---- performance stats, bottom right ----
+
+    private int _frames;
+    private System.Windows.Threading.DispatcherTimer _statsTimer;
+    private readonly System.Diagnostics.Stopwatch _statsClock = new();
+
+    private void OnFrame(object sender, EventArgs e) => _frames++;
+
+    private void StartStats()
+    {
+        StopStats();
+        if (!AppSettings.Default.PreviewStats)
+        {
+            PerfText.Text = "";
+            return;
+        }
+        CompositionTarget.Rendering += OnFrame;
+        _statsClock.Restart();
+        _statsTimer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+        _statsTimer.Tick += (_, _) =>
+        {
+            var fps = _frames / Math.Max(0.001, _statsClock.Elapsed.TotalSeconds);
+            _frames = 0;
+            _statsClock.Restart();
+            var shown = _mesh == null ? 0 : _models.Where(m => m.Model.Material != null).Sum(m => m.Part.Triangles);
+            var memory = GC.GetTotalMemory(false) / 1024 / 1024;
+            // WPF only draws when something changes, so an idle view reads as 0.
+            PerfText.Text = Loc.F("P3dView.Perf", fps < 1 ? "-" : fps.ToString("0"), shown.ToString("N0"), _models.Count, _materials.Count, memory);
+        };
+        _statsTimer.Start();
+    }
+
+    private void StopStats()
+    {
+        CompositionTarget.Rendering -= OnFrame;
+        _statsTimer?.Stop();
+        _statsTimer = null;
     }
 
     private static Material Frozen(Material material)
@@ -131,6 +296,8 @@ public partial class P3dPreviewView : UserControl
         _mesh = mesh;
         Parts.Children.Clear();
         _models.Clear();
+        _wires.Clear();
+        Wires.Children.Clear();
         // See-through parts go last, otherwise WPF hides whatever is drawn behind them afterwards.
         foreach (var part in mesh.Parts.OrderBy(p => TextureResolver.HasAlpha(TextureResolver.Normalize(p.Texture))))
         {
@@ -144,6 +311,10 @@ public partial class P3dPreviewView : UserControl
             _models.Add((part, model));
         }
         Overlay.Text = mesh.Parts.Count == 0 ? Loc.T("P3dView.NoGeometry") : "";
+        if (_shading == "wire")
+        {
+            ApplyShading();
+        }
         if (!_fitted && !mesh.Bounds.IsEmpty)
         {
             Fit();

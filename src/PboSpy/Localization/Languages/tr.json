@@ -612,5 +612,11 @@
   "Update.TokenTip": "Yalnızca GitHub CLI (gh) kurulu ve oturum açık değilse gerekir: sürümler özel bir depoda. Salt okunur bir belirteç yeterli.",
   "Update.UpToDate": "PboSpy {0} en yeni sürüm.",
   "Update.Ready": "PboSpy {0} indirildi (sizdeki {1}).\n\nGüncellemek için şimdi yeniden başlatılsın mı?\nHayır: PboSpy kapanınca güncellenir.",
-  "Update.Failed": "Güncellemeler denetlenemedi: {0}"
+  "Update.Failed": "Güncellemeler denetlenemedi: {0}",
+  "P3dView.Wireframe": "Tel kafes",
+  "P3dView.Solid": "Katı",
+  "P3dView.MaterialPreview": "Malzeme",
+  "P3dView.Rendered": "İşlenmiş",
+  "P3dView.Perf": "{0} FPS · {1} üçgen · {2} parça · {3} doku · {4} MB",
+  "Settings.PreviewStats": "3D önizlemede FPS ve model bilgisini göster"
 }

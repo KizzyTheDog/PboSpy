@@ -44,6 +44,7 @@
             <TextBlock Style="{StaticResource Header}" Text="{loc:Tr Settings.Explorer}"/>
             <CheckBox IsChecked="{Binding ShowFileSizes}" Content="{loc:Tr Settings.ShowSizes}"/>
             <CheckBox IsChecked="{Binding SingleClickPreview}" Content="{loc:Tr Settings.SingleClickPreview}"/>
+            <CheckBox IsChecked="{Binding PreviewStats}" Content="{loc:Tr Settings.PreviewStats}"/>
             <CheckBox IsChecked="{Binding HideFilteredFiles}" Content="{loc:Tr Explorer.Filter.Hide}"/>
             <CheckBox IsChecked="{Binding DragOutConvertsImages}" Content="{loc:Tr Settings.DragConvert}"/>
             <StackPanel Orientation="Horizontal">

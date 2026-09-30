@@ -612,5 +612,11 @@
   "Update.TokenTip": "Nur nötig, wenn die GitHub CLI (gh) nicht installiert und angemeldet ist: Die Releases liegen in einem privaten Repository. Ein Nur-Lese-Token reicht.",
   "Update.UpToDate": "PboSpy {0} ist die neueste Version.",
   "Update.Ready": "PboSpy {0} ist heruntergeladen (Sie haben {1}).\n\nJetzt neu starten und aktualisieren?\nNein: Das Update erfolgt beim Schließen von PboSpy.",
-  "Update.Failed": "Suche nach Updates fehlgeschlagen: {0}"
+  "Update.Failed": "Suche nach Updates fehlgeschlagen: {0}",
+  "P3dView.Wireframe": "Drahtgitter",
+  "P3dView.Solid": "Solide",
+  "P3dView.MaterialPreview": "Material",
+  "P3dView.Rendered": "Gerendert",
+  "P3dView.Perf": "{0} FPS · {1} Dreiecke · {2} Teile · {3} Texturen · {4} MB",
+  "Settings.PreviewStats": "FPS und Modellwerte in der 3D-Vorschau zeigen"
 }

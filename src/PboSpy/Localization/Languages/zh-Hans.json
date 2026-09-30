@@ -612,5 +612,11 @@
   "Update.TokenTip": "仅在未安装或未登录 GitHub CLI (gh) 时需要：版本发布在私有仓库中。只读令牌即可。",
   "Update.UpToDate": "PboSpy {0} 已是最新版本。",
   "Update.Ready": "已下载 PboSpy {0}（当前 {1}）。\n\n现在重启以更新吗？\n否：关闭 PboSpy 时更新。",
-  "Update.Failed": "无法检查更新：{0}"
+  "Update.Failed": "无法检查更新：{0}",
+  "P3dView.Wireframe": "线框",
+  "P3dView.Solid": "实体",
+  "P3dView.MaterialPreview": "材质",
+  "P3dView.Rendered": "渲染",
+  "P3dView.Perf": "{0} FPS · {1} 三角形 · {2} 部分 · {3} 纹理 · {4} MB",
+  "Settings.PreviewStats": "在 3D 预览中显示 FPS 和模型统计"
 }

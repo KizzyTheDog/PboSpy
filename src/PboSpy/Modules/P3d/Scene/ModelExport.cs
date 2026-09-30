@@ -13,6 +13,7 @@ internal static class ModelExport
     private sealed class Maps
     {
         public string Name = "";
+        public string Base = "";
         public BitmapSource Colour;
         public bool Alpha;
         public BitmapSource Normal;
@@ -122,11 +123,18 @@ internal static class ModelExport
             {
                 continue;
             }
-            var maps = new Maps
+            // Named like the texture ("hull_fwd_co") so the Blender addon and people can match them;
+            // scrambled names are decoded first.
+            var stem = TextureResolver.IsProcedural(part.Texture) || string.IsNullOrWhiteSpace(part.Texture) ? "procedural"
+                : PboSpy.Modules.Deobfuscate.Core.NameRecovery.FixEncoding(Path.GetFileNameWithoutExtension(part.Texture.Replace('\\', '/').Split('/').Last()));
+            stem = new string(stem.Select(c => char.IsLetterOrDigit(c) || c is '_' or '-' ? c : '_').ToArray());
+            var name = stem;
+            for (var n = 2; result.Values.Any(m => m.Name == name); n++)
             {
-                Name = $"m{result.Count:D2}_" + string.Concat(Path.GetFileNameWithoutExtension(
-                    TextureResolver.IsProcedural(part.Texture) ? "procedural" : part.Texture ?? "").Where(char.IsLetterOrDigit).Take(40))
-            };
+                name = stem + "_" + n;
+            }
+            var suffix = new[] { "_co", "_ca", "_mc", "_mco" }.FirstOrDefault(x => stem.EndsWith(x, StringComparison.OrdinalIgnoreCase));
+            var maps = new Maps { Name = name, Base = (suffix != null ? stem[..^suffix.Length] : stem) + (name == stem ? "" : name[stem.Length..]) };
             var colour = resolver.Resolve(part.Texture, maxSize);
             maps.Colour = colour.Image ?? (colour.Color is System.Windows.Media.Color c ? Solid(c) : null);
             maps.Alpha = TextureResolver.HasAlpha(TextureResolver.Normalize(part.Texture));
@@ -197,17 +205,18 @@ internal static class ModelExport
         return Frozen(BitmapSource.Create(source.PixelWidth, source.PixelHeight, 96, 96, System.Windows.Media.PixelFormats.Bgra32, null, p, source.PixelWidth * 4));
     }
 
-    // glTF packing: G = roughness (1 - _smdi blue), B = metallic (_smdi green).
+    // ORM packing (R occlusion, G roughness, B metallic). _smdi green is how strong the shine is and blue how
+    // tight it is; treating green as metal made everything black chrome, so metallic stays 0 and both
+    // channels only lower the roughness.
     private static BitmapSource MetalRoughFromSmdi(BitmapSource smdi)
     {
         var p = Pixels(smdi);
         for (var i = 0; i < p.Length; i += 4)
         {
-            var metallic = p[i + 1];
-            var roughness = (byte)(255 - p[i]);
-            p[i] = metallic;
-            p[i + 1] = roughness;
-            p[i + 2] = 0;
+            var shine = p[i + 1] / 255.0 * (p[i] / 255.0);
+            p[i + 1] = (byte)(Math.Clamp(1 - shine * 0.75, 0.3, 1) * 255);
+            p[i] = 0;
+            p[i + 2] = 255;
             p[i + 3] = 255;
         }
         return Frozen(BitmapSource.Create(smdi.PixelWidth, smdi.PixelHeight, 96, 96, System.Windows.Media.PixelFormats.Bgra32, null, p, smdi.PixelWidth * 4));
@@ -252,7 +261,7 @@ internal static class ModelExport
             {
                 mtl.WriteLine($"newmtl {maps.Name}");
                 mtl.WriteLine("Kd 1 1 1");
-                var colour = Save(maps.Colour, maps.Name + "_basecolor");
+                var colour = Save(maps.Colour, maps.Name);
                 if (colour != null)
                 {
                     mtl.WriteLine($"map_Kd {colour}");
@@ -261,12 +270,12 @@ internal static class ModelExport
                         mtl.WriteLine($"map_d {colour}");
                     }
                 }
-                var normal = Save(maps.Normal, maps.Name + "_normal");
+                var normal = Save(maps.Normal, maps.Base + "_normal");
                 if (normal != null)
                 {
                     mtl.WriteLine($"map_Bump {normal}");
                 }
-                var metalRough = Save(maps.MetalRough, maps.Name + "_metalrough");
+                var metalRough = Save(maps.MetalRough, maps.Base + "_orm");
                 if (metalRough != null)
                 {
                     mtl.WriteLine($"map_Pr {metalRough}");
@@ -378,18 +387,18 @@ internal static class ModelExport
         foreach (var (key, maps) in materials)
         {
             var pbr = new JsonObject { ["metallicFactor"] = 0.0, ["roughnessFactor"] = 0.8 };
-            if (Texture(maps.Colour, maps.Name + "_basecolor") is int colour)
+            if (Texture(maps.Colour, maps.Name) is int colour)
             {
                 pbr["baseColorTexture"] = new JsonObject { ["index"] = colour };
             }
-            if (Texture(maps.MetalRough, maps.Name + "_metalrough") is int metalRough)
+            if (Texture(maps.MetalRough, maps.Base + "_orm") is int metalRough)
             {
                 pbr["metallicRoughnessTexture"] = new JsonObject { ["index"] = metalRough };
                 pbr["metallicFactor"] = 1.0;
                 pbr["roughnessFactor"] = 1.0;
             }
             var material = new JsonObject { ["name"] = maps.Name, ["pbrMetallicRoughness"] = pbr, ["doubleSided"] = true };
-            if (Texture(maps.Normal, maps.Name + "_normal") is int normal)
+            if (Texture(maps.Normal, maps.Base + "_normal") is int normal)
             {
                 material["normalTexture"] = new JsonObject { ["index"] = normal };
             }
@@ -568,9 +577,9 @@ internal static class ModelExport
             material.Add("ShadingModel", "phong");
             material.Add("MultiLayer", 0);
             material.Add("Properties70").Add("P", "DiffuseColor", "Color", "", "A", 1.0, 1.0, 1.0);
-            foreach (var (image, suffix, slot) in new[] { (maps.Colour, "_basecolor", "DiffuseColor"), (maps.Normal, "_normal", "NormalMap") })
+            foreach (var (image, textureName, slot) in new[] { (maps.Colour, maps.Name, "DiffuseColor"), (maps.Normal, maps.Base + "_normal", "NormalMap") })
             {
-                var relative = Save(image, maps.Name + suffix);
+                var relative = Save(image, textureName);
                 if (relative == null)
                 {
                     continue;
@@ -578,14 +587,14 @@ internal static class ModelExport
                 var full = Path.Combine(folder, relative);
                 var texture = next++;
                 var video = next++;
-                var clip = objects.Add("Video", video, Named(maps.Name + suffix, "Video"), "Clip");
+                var clip = objects.Add("Video", video, Named(textureName, "Video"), "Clip");
                 clip.Add("Type", "Clip");
                 clip.Add("FileName", full);
                 clip.Add("RelativeFilename", relative);
-                var tex = objects.Add("Texture", texture, Named(maps.Name + suffix, "Texture"), "");
+                var tex = objects.Add("Texture", texture, Named(textureName, "Texture"), "");
                 tex.Add("Type", "TextureVideoClip");
                 tex.Add("Version", 202);
-                tex.Add("TextureName", Named(maps.Name + suffix, "Texture"));
+                tex.Add("TextureName", Named(textureName, "Texture"));
                 tex.Add("FileName", full);
                 tex.Add("RelativeFilename", relative);
                 links.Add("C", "OO", video, texture);

@@ -25,11 +25,13 @@
             <StackPanel Orientation="Horizontal" Visibility="{Binding ShowModel, Converter={StaticResource BoolToVis}}">
                 <TextBlock Text="{loc:Tr P3dView.Lod}" Style="{StaticResource PboSpy.Label}"/>
                 <ComboBox x:Name="LodPicker" IsEnabled="{Binding HasLodChoice}" ItemsSource="{Binding ModelLods}" SelectedItem="{Binding SelectedLod}" MinWidth="170" Margin="0 0 14 0"/>
-                <CheckBox Content="{loc:Tr P3dView.ShowTextures}" IsChecked="{Binding ShowTextures}" VerticalAlignment="Center"
-                          Foreground="{DynamicResource PboSpy.Text}" Margin="0 0 14 0"/>
-                <CheckBox Content="{loc:Tr P3dView.DetailMaps}" IsChecked="{Binding ShowDetailMaps}" VerticalAlignment="Center"
-                          Foreground="{DynamicResource PboSpy.Text}" Margin="0 0 14 0" ToolTip="{loc:Tr P3dView.DetailMapsTip}"
-                          IsEnabled="{Binding ShowTextures}"/>
+                <StackPanel Orientation="Horizontal" Margin="0 0 14 0">
+                    <RadioButton x:Name="ShadeWire" GroupName="Shading" Style="{StaticResource PboSpy.Button}" Content="{loc:Tr P3dView.Wireframe}" Checked="OnShading"/>
+                    <RadioButton x:Name="ShadeSolid" GroupName="Shading" Style="{StaticResource PboSpy.Button}" Content="{loc:Tr P3dView.Solid}" Checked="OnShading"/>
+                    <RadioButton x:Name="ShadeMaterial" GroupName="Shading" Style="{StaticResource PboSpy.Button}" Content="{loc:Tr P3dView.MaterialPreview}" Checked="OnShading"/>
+                    <RadioButton x:Name="ShadeRendered" GroupName="Shading" Style="{StaticResource PboSpy.Button}" Content="{loc:Tr P3dView.Rendered}" Checked="OnShading"
+                                 ToolTip="{loc:Tr P3dView.DetailMapsTip}"/>
+                </StackPanel>
                 <Button Content="{loc:Tr P3dView.ResetView}" Style="{StaticResource PboSpy.Button}" Click="OnResetView" Margin="0 0 6 0"/>
                 <Button Content="{loc:Tr P3dView.TextureFolder}" Style="{StaticResource PboSpy.Button}" Click="OnPickFolder"
                         ToolTip="{loc:Tr P3dView.TextureFolderTip}"/>
@@ -62,6 +64,7 @@
                                     <DirectionalLight x:Name="HeadLight" Color="#FFE0E0E0" Direction="0 -0.3 -1"/>
                                     <DirectionalLight Color="#FF3C3C3C" Direction="0.3 -1 0.4"/>
                                     <Model3DGroup x:Name="Parts"/>
+                                    <Model3DGroup x:Name="Wires"/>
                                 </Model3DGroup>
                             </ModelVisual3D.Content>
                         </ModelVisual3D>
@@ -70,6 +73,8 @@
                                Foreground="{DynamicResource PboSpy.TextDim}" TextWrapping="Wrap" TextAlignment="Center" Margin="20"/>
                     <TextBlock Text="{loc:Tr P3dView.Hint}" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10 0 10 8"
                                FontSize="11" Foreground="{DynamicResource PboSpy.TextDim}" IsHitTestVisible="False"/>
+                    <TextBlock x:Name="PerfText" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="10 0 10 8"
+                               FontSize="11" FontFamily="Consolas" TextAlignment="Right" Foreground="{DynamicResource PboSpy.TextDim}" IsHitTestVisible="False"/>
                 </Grid>
             </Border>
 

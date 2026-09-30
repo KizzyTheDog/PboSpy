@@ -57,6 +57,8 @@ public sealed class AppSettings : INotifyPropertyChanged
     private int modelExportSplitAt = 20000;
     private string modelRvmatFolder = "";
     private bool autoUpdate = true;
+    private bool previewStats = true;
+    private string previewShading = "rendered";
     private string updateToken = "";
     private bool dragOutConvertsImages;
     private int recentFileCount = 10;
@@ -104,6 +106,8 @@ public sealed class AppSettings : INotifyPropertyChanged
     public int ModelExportSplitAt { get => modelExportSplitAt; set => Set(ref modelExportSplitAt, Math.Max(100, value)); }
     public string ModelRvmatFolder { get => modelRvmatFolder; set => Set(ref modelRvmatFolder, value ?? ""); }
     public bool AutoUpdate { get => autoUpdate; set => Set(ref autoUpdate, value); }
+    public bool PreviewStats { get => previewStats; set => Set(ref previewStats, value); }
+    public string PreviewShading { get => previewShading; set => Set(ref previewShading, value ?? "rendered"); }
     public string UpdateToken { get => updateToken; set => Set(ref updateToken, value ?? ""); }
     public bool DragOutConvertsImages { get => dragOutConvertsImages; set => Set(ref dragOutConvertsImages, value); }
     public int RecentFileCount { get => recentFileCount; set => Set(ref recentFileCount, Math.Clamp(value, 0, 50)); }

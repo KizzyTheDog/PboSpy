@@ -612,5 +612,11 @@
   "Update.TokenTip": "Potřeba jen když není nainstalované a přihlášené GitHub CLI (gh): vydání jsou v soukromém repozitáři. Stačí token jen pro čtení.",
   "Update.UpToDate": "PboSpy {0} je nejnovější verze.",
   "Update.Ready": "PboSpy {0} je stažený (máte {1}).\n\nRestartovat a aktualizovat?\nNe: aktualizuje se po zavření PboSpy.",
-  "Update.Failed": "Nepodařilo se zkontrolovat aktualizace: {0}"
+  "Update.Failed": "Nepodařilo se zkontrolovat aktualizace: {0}",
+  "P3dView.Wireframe": "Drátový model",
+  "P3dView.Solid": "Plné",
+  "P3dView.MaterialPreview": "Materiál",
+  "P3dView.Rendered": "Renderované",
+  "P3dView.Perf": "{0} FPS · {1} trojúh. · {2} částí · {3} textur · {4} MB",
+  "Settings.PreviewStats": "Zobrazit FPS a statistiky modelu ve 3D náhledu"
 }
