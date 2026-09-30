@@ -2,6 +2,12 @@
 
 Newest first. Each commit adds an entry: what changed, why, and what was checked.
 
+## 2026-09-30 · repository live
+
+- Private repo created at KizzyTheDog/PboSpy and release **v2.1.0** published (`PboSpy-2.1.0.zip`, 5.1 MB, without BisDll.dll or .pdb files).
+- Updater: finds `gh.exe` in its install folder too, because apps started before gh was installed don't see it on PATH.
+- Checked: `gh api repos/KizzyTheDog/PboSpy/releases/latest` returns v2.1.0 with the zip asset.
+
 ## 2026-09-30 · v2.1.0 · first commit of the fork
 
 **State at the start of the repository**, after several sessions of work (details in CHANGES.md):

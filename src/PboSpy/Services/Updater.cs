@@ -130,7 +130,9 @@ public static class Updater
     {
         try
         {
-            var info = new ProcessStartInfo("gh", arguments)
+            // Right after installing gh, apps started earlier don't have it on PATH yet.
+            var installed = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "GitHub CLI", "gh.exe");
+            var info = new ProcessStartInfo(File.Exists(installed) ? installed : "gh", arguments)
             {
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
