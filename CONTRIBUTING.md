@@ -28,6 +28,9 @@ Open work, roughly in order. Done items move to [DEVLOG.md](DEVLOG.md) and [CHAN
 - [ ] **Tidy SQF** action: strip the blank lines obfuscators leave, normalise indentation
 - [ ] **Name recovery**: fewer `unnamed_###` fallbacks; show the new names in the config preview once applied
 
+- [ ] **Wireframe like Blender** (X-ray, 1 px lines) with a "dense areas" heatmap
+- [ ] **Faster loading of huge models** (400 MB+ P3Ds)
+
 ### Ideas
 
 - [ ] RTM preview (bones, frames, duration)
