@@ -2,7 +2,7 @@
 
 A Windows tool for opening Arma 3 PBOs and turning what's inside into things Blender and Roblox Studio can use: models, textures, sounds and configs.
 
-This is a private fork of [rvost/PboSpy](https://github.com/rvost/PboSpy) (MIT). What's changed is listed in [CHANGES.md](CHANGES.md), and each commit's notes are in [DEVLOG.md](DEVLOG.md).
+This is a private fork of [rvost/PboSpy](https://github.com/rvost/PboSpy) (MIT). What's changed is listed in [CHANGES.md](CHANGES.md), each commit's notes are in [DEVLOG.md](DEVLOG.md), and open work is in [TODO.md](TODO.md).
 
 ## What it does
 
