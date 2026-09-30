@@ -19,7 +19,9 @@ Open work, roughly in order. Done items move to [DEVLOG.md](DEVLOG.md) and [CHAN
   - [ ] Option to write each output next to its own source (inputs from different places)
   - [ ] After converting: delete the originals, or move them into a backup folder that mirrors the structure
   - [ ] Pick which input types each section converts
-- [ ] **Presets**: have buttons run the action (e.g. Debinarize) instead of only opening the tool; presets for Microsoft Flight Simulator 2024
+- [ ] **Presets**
+  - [ ] Buttons run the action (e.g. Debinarize) instead of only opening the tool
+  - [ ] Presets for more games: Microsoft Flight Simulator 2024 first, others later (each game gets its own category)
 - [ ] **3D preview**
   - [ ] Real normal mapping (needs a DirectX renderer; WPF 3D can't do it, so `_nohq` is baked in as lighting for now)
   - [ ] Use `_as` ambient maps (they use the second UV set)
