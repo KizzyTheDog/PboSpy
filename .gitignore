@@ -357,3 +357,7 @@ libs/BisDll/
 build.settings.json
 libs/bis-file-formats/.git_upstream/
 *.glb
+
+# Local working notes (not published)
+HANDOFF.md
+CLAUDE.md
