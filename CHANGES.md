@@ -103,3 +103,10 @@
 - Checked: PGS_MH47G Block_1 exports to GLB with 56 of 57 materials textured (the other is `empty_ca`, blank by design); wireframe and stats on cca.p3d.
 
 - Removed: the "Textures" and "Detail maps" checkboxes in the 3D preview (replaced by the view modes).
+
+## v2.1.2
+
+- The updater could stall mid-download: it started `gh` with its error output redirected but never read it, `gh` writes progress there, and once that pipe was full `gh` waited forever (found testing 2.1.0 → 2.1.1: the zip stopped at 1.4 of 5.1 MB).
+- Now downloads directly from GitHub (the repo is public), with `gh` only as a fallback, and reads both of `gh`'s outputs.
+- A half-finished earlier download is thrown away instead of reused.
+- 2.1.0 and 2.1.1 have the broken updater, so those need 2.1.2 installed by hand once.

@@ -61,6 +61,10 @@ public static class Updater
             var files = Path.Combine(folder, "files");
             if (!Directory.Exists(files))
             {
+                if (Directory.Exists(folder))
+                {
+                    Directory.Delete(folder, true);
+                }
                 Directory.CreateDirectory(folder);
                 await Download(tag, asset, zip);
                 ZipFile.ExtractToDirectory(zip, files, true);
@@ -90,27 +94,38 @@ public static class Updater
         Application.Current.Dispatcher.Invoke(() =>
             MessageBox.Show(Application.Current.MainWindow, text, "PboSpy", buttons, MessageBoxImage.Information));
 
+    // The repository is public, so a plain request works; gh is the fallback (rate limits, or if it goes private again).
     private static async Task<JsonObject> Latest()
     {
-        var viaCli = Gh($"api repos/{Repo}/releases/latest");
-        if (viaCli != null)
+        try
         {
-            return JsonNode.Parse(viaCli) as JsonObject;
+            using var client = Client();
+            return JsonNode.Parse(await client.GetStringAsync($"https://api.github.com/repos/{Repo}/releases/latest")) as JsonObject;
         }
-        using var client = Client();
-        return JsonNode.Parse(await client.GetStringAsync($"https://api.github.com/repos/{Repo}/releases/latest")) as JsonObject;
+        catch (HttpRequestException)
+        {
+            var viaCli = Gh($"api repos/{Repo}/releases/latest");
+            return viaCli == null ? throw new InvalidOperationException("GitHub can't be reached.") : JsonNode.Parse(viaCli) as JsonObject;
+        }
     }
 
     private static async Task Download(string tag, JsonObject asset, string zip)
     {
         var folder = Path.GetDirectoryName(zip);
-        if (Gh($"release download {tag} -R {Repo} -p \"{asset["name"]}\" -D \"{folder}\" --clobber") != null && File.Exists(zip))
+        try
         {
+            using var client = Client();
+            client.DefaultRequestHeaders.Accept.ParseAdd("application/octet-stream");
+            await File.WriteAllBytesAsync(zip, await client.GetByteArrayAsync(asset["url"].GetValue<string>()));
             return;
         }
-        using var client = Client();
-        client.DefaultRequestHeaders.Accept.ParseAdd("application/octet-stream");
-        await File.WriteAllBytesAsync(zip, await client.GetByteArrayAsync(asset["url"].GetValue<string>()));
+        catch (HttpRequestException)
+        {
+        }
+        if (Gh($"release download {tag} -R {Repo} -p \"{asset["name"]}\" -D \"{folder}\" --clobber") == null || !File.Exists(zip))
+        {
+            throw new InvalidOperationException("The update couldn't be downloaded.");
+        }
     }
 
     private static HttpClient Client()
@@ -140,7 +155,9 @@ public static class Updater
                 CreateNoWindow = true
             };
             using var process = Process.Start(info);
+            var errors = process.StandardError.ReadToEndAsync();
             var output = process.StandardOutput.ReadToEnd();
+            _ = errors.Result;
             process.WaitForExit(120_000);
             return process.ExitCode == 0 ? output : null;
         }

@@ -2,6 +2,13 @@
 
 Newest first. Each commit adds an entry: what changed, why, and what was checked.
 
+## 2026-09-30 · v2.1.2 · updater fix
+
+- The updater could stall mid-download: it started `gh` with its error output redirected but never read it, `gh` writes progress there, and once that pipe was full `gh` waited forever (found testing 2.1.0 → 2.1.1: the zip stopped at 1.4 of 5.1 MB).
+- Now downloads directly from GitHub (the repo is public), with `gh` only as a fallback, and reads both of `gh`'s outputs.
+- A half-finished earlier download is thrown away instead of reused.
+- 2.1.0 and 2.1.1 have the broken updater, so those need 2.1.2 installed by hand once.
+
 ## 2026-09-30 · v2.1.1 · export fixes, viewport modes
 
 - **Export material names match the textures** (`exterior_misc2_co` instead of `m01_exteriormisc2co`), scrambled names decoded. The Blender Auto Texture Linker matched nothing before because of those names; UVs were never changed by the split. Normal maps are written as `<name>_normal`, shine as `<name>_orm`.
