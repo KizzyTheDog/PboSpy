@@ -14,7 +14,7 @@ namespace PboSpy.Services;
 /// </summary>
 public static class Updater
 {
-    public const string Repo = "OWNER/PboSpy";
+    public const string Repo = "KizzyTheDog/PboSpy";
 
     private static string _pendingScript;
 
