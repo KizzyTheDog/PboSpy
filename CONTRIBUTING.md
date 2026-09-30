@@ -1,8 +1,17 @@
-# To do
+# Contributing and to do
+
+## How to help
+
+- **Bugs and ideas**: open an issue. Say what file you opened (PBO, P3D, texture…), what you did and what happened.
+- **Code**: fork, make the change on a branch, open a pull request. Build with `powershell -File build.ps1 -Cli` (.NET 8 SDK).
+- **Translations**: the language files are `src/PboSpy/Localization/Languages/*.json`. Fixes from native speakers are very welcome.
+- Don't commit `BisDll.dll`; it isn't redistributable.
+
+## To do
 
 Open work, roughly in order. Done items move to [DEVLOG.md](DEVLOG.md) and [CHANGES.md](CHANGES.md).
 
-## Features
+### Features
 
 - [ ] **Roblox `.mesh` export**, with the 20k-triangle split
 - [ ] **Convert window**
@@ -19,14 +28,14 @@ Open work, roughly in order. Done items move to [DEVLOG.md](DEVLOG.md) and [CHAN
 - [ ] **Tidy SQF** action: strip the blank lines obfuscators leave, normalise indentation
 - [ ] **Name recovery**: fewer `unnamed_###` fallbacks; show the new names in the config preview once applied
 
-## Ideas
+### Ideas
 
 - [ ] RTM preview (bones, frames, duration)
 - [ ] Search / diff configs across all opened PBOs
 - [ ] WRP (terrain) info
 - [ ] Signature / bikey checker
 
-## Needs testing in real use
+### Needs testing in real use
 
 - [ ] Auto-update end to end (first real test with the next release)
 - [ ] 3D preview cursor wrap while dragging
