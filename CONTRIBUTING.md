@@ -37,7 +37,7 @@ Open work, roughly in order. Done items move to [DEVLOG.md](DEVLOG.md) and [CHAN
 
 ### Needs testing in real use
 
-- [ ] Auto-update end to end (first real test with the next release)
+- [x] Auto-update end to end (2.1.0 → 2.1.3: downloaded, swapped, restarted)
 - [ ] 3D preview cursor wrap while dragging
 - [ ] Export window (GLB / glTF / FBX / OBJ) from the UI, and importing the results into Roblox Studio
 - [ ] Convert window: Add files / Add folder / Remove, "Select the file(s) when done"
