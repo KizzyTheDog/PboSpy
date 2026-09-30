@@ -115,3 +115,12 @@
 
 - The real reason updates never arrived: GitHub's file host was slow from this PC (about 140 KB/s, one 5 MB request took over 2 minutes), and the download gave up at HttpClient's default 100 s. That error wasn't the kind the fallback caught, so it failed silently.
 - It now streams to a `.part` file with a 30-minute limit, uses the normal release download link, and any failure falls back to `gh`.
+
+## v2.1.4
+
+- **Triangles were wound backwards** in the preview and exports: mirroring Arma's left-handed Z flips facing, and drawing both sides hid it. Normals pointed inwards too, so lighting (and exported shading) was off. Fixed in the mesh builder.
+- **Back faces aren't drawn any more** (the game culls them too), except on see-through `_ca` parts. That halves the drawing work.
+- **Wireframe like Blender's**: thin lines drawn by the GPU from a texture on every triangle, and the model hides the edges behind it. It replaces the thick per-edge strips, and costs nothing per frame.
+- **FPS counter**: listening for frames made WPF redraw non-stop, which cost performance and read about 800 FPS. It now counts only real frames while the camera moves; `*` means the number is from the last movement.
+- **Less stutter**: texture list thumbnails are made once at 64 px in the background (they were full textures scaled on every layout pass). More textures decode in parallel, and the model is built off-screen and added in one go.
+- Checked on cca.p3d: rendered view closed and solid, wireframe with hidden lines.

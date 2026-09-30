@@ -79,8 +79,8 @@ internal sealed class ModelMesh
 }
 
 /// <summary>
-/// Turns ODOL sections or MLOD faces into meshes. Arma is left handed, so Z is mirrored;
-/// back faces get the same material, which keeps odd winding from punching holes.
+/// Turns ODOL sections or MLOD faces into meshes. Arma is left handed, so Z is mirrored and the
+/// triangle order is swapped to keep faces pointing outwards (the preview culls back faces like the game).
 /// </summary>
 internal static class ModelMeshBuilder
 {
@@ -245,10 +245,10 @@ internal static class ModelMeshBuilder
                 {
                     continue;
                 }
-                part.Triangle(local[0], local[1], local[2]);
+                part.Triangle(local[0], local[2], local[1]);
                 if (local.Length == 4)
                 {
-                    part.Triangle(local[0], local[2], local[3]);
+                    part.Triangle(local[0], local[3], local[2]);
                 }
             }
         }
@@ -325,11 +325,11 @@ internal static class ModelMeshBuilder
             {
                 continue;
             }
-            // MLOD stores faces in the opposite order to ODOL.
-            part.Triangle(local[0], local[2], local[1]);
+            // MLOD stores faces in the opposite order to ODOL; with Z mirrored, this order faces outwards.
+            part.Triangle(local[0], local[1], local[2]);
             if (count == 4)
             {
-                part.Triangle(local[0], local[3], local[2]);
+                part.Triangle(local[0], local[2], local[3]);
             }
         }
 

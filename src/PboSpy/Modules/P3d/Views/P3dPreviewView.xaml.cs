@@ -68,40 +68,34 @@ public partial class P3dPreviewView : UserControl
         ApplyShading();
     }
 
+    private Material _wireFill;
+    private Material _wireLines;
+
+    // Like Blender: thin even lines, and the model itself hides the edges behind it.
     private async void ApplyShading()
     {
-        var wire = _shading == "wire";
-        if (!wire)
+        ApplyMaterials();
+        if (_shading != "wire")
         {
-            if (!SceneRoot.Children.Contains(Parts))
-            {
-                SceneRoot.Children.Add(Parts);
-            }
             Wires.Children.Clear();
             return;
         }
-        SceneRoot.Children.Remove(Parts);
         var version = ++_wireVersion;
-        var parts = _models.Select(m => m.Part).ToList();
-        var width = _radius * 0.0015;
-        var missing = parts.Where(p => !_wires.ContainsKey(p)).ToList();
+        var lift = _radius * 0.004;
+        var missing = _models.Select(m => m.Part).Where(p => !_wires.ContainsKey(p)).ToList();
         if (missing.Count > 0)
         {
             Overlay.Text = Loc.T("P3dView.Loading");
-            var built = await Task.Run(() => missing.Select(p => (p, WireMesh(p.Mesh, width))).ToList());
+            var built = await Task.Run(() => missing.AsParallel().Select(p => (p, WireMesh(p.Mesh, lift))).ToList());
             Overlay.Text = "";
-            var brush = TryFindResource("PboSpy.Accent") as Brush ?? Brushes.Orange;
-            var material = new MaterialGroup();
-            material.Children.Add(new DiffuseMaterial(Brushes.Black));
-            material.Children.Add(new EmissiveMaterial(brush));
-            material.Freeze();
             foreach (var (part, mesh) in built)
             {
-                var model = new GeometryModel3D(mesh, material) { BackMaterial = material };
+                var model = new GeometryModel3D(mesh, WireLines()) { BackMaterial = WireLines() };
                 if (part.Offset.LengthSquared > 0)
                 {
                     model.Transform = new TranslateTransform3D(part.Offset);
                 }
+                model.Freeze();
                 _wires[part] = model;
             }
         }
@@ -109,24 +103,69 @@ public partial class P3dPreviewView : UserControl
         {
             return;
         }
-        Wires.Children.Clear();
+        var group = new Model3DGroup();
         foreach (var (part, model) in _models)
         {
-            if (_wires.TryGetValue(part, out var wireModel) && model.Material != null)
+            if (_wires.TryGetValue(part, out var wireModel) && IsVisible(part.Texture))
             {
-                Wires.Children.Add(wireModel);
+                group.Children.Add(wireModel);
             }
         }
+        Wires.Children.Clear();
+        Wires.Children.Add(group);
     }
 
-    // WPF 3D has no line drawing: every edge becomes a thin strip lying on its face.
-    private static MeshGeometry3D WireMesh(MeshGeometry3D source, double width)
+    private Material WireFill()
     {
-        var positions = new Point3DCollection();
-        var indices = new Int32Collection();
-        var seen = new HashSet<long>();
+        if (_wireFill == null)
+        {
+            var background = (TryFindResource("PboSpy.Deep") as SolidColorBrush)?.Color ?? Color.FromRgb(0x1B, 0x1D, 0x22);
+            var fill = new MaterialGroup();
+            fill.Children.Add(new DiffuseMaterial(Brushes.Black));
+            fill.Children.Add(new EmissiveMaterial(new SolidColorBrush(background)));
+            fill.Freeze();
+            _wireFill = fill;
+        }
+        return _wireFill;
+    }
+
+    // A texture with the three edges of a triangle drawn in it, mapped onto every triangle. The GPU draws it,
+    // so it costs nothing per frame. The lines are fairly wide in the texture because small triangles use its
+    // shrunk copies, where thin lines averaged away to nothing.
+    private Material WireLines()
+    {
+        if (_wireLines == null)
+        {
+            const int size = 1024;
+            var visual = new DrawingVisual();
+            using (var dc = visual.RenderOpen())
+            {
+                var pen = new Pen(new SolidColorBrush(Color.FromRgb(0xA8, 0xAD, 0xB6)), 24);
+                pen.Freeze();
+                dc.DrawLine(pen, new Point(0, 0), new Point(size, 0));
+                dc.DrawLine(pen, new Point(0, 0), new Point(0, size));
+                dc.DrawLine(pen, new Point(size, 0), new Point(0, size));
+            }
+            var bitmap = new RenderTargetBitmap(size, size, 96, 96, PixelFormats.Pbgra32);
+            bitmap.Render(visual);
+            bitmap.Freeze();
+            var brush = new ImageBrush(bitmap) { ViewportUnits = BrushMappingMode.Absolute, Viewport = new Rect(0, 0, 1, 1) };
+            brush.Freeze();
+            var lines = new EmissiveMaterial(brush);
+            lines.Freeze();
+            _wireLines = lines;
+        }
+        return _wireLines;
+    }
+
+    // Every triangle gets its own corners with UVs (0,0) (1,0) (0,1), lifted a hair off the surface.
+    private static MeshGeometry3D WireMesh(MeshGeometry3D source, double lift)
+    {
         var idx = source.TriangleIndices;
         var p = source.Positions;
+        var positions = new Point3DCollection(idx.Count);
+        var uvs = new PointCollection(idx.Count);
+        var corners = new[] { new Point(0, 0), new Point(1, 0), new Point(0, 1) };
         for (var t = 0; t + 2 < idx.Count; t += 3)
         {
             var normal = Vector3D.CrossProduct(p[idx[t + 1]] - p[idx[t]], p[idx[t + 2]] - p[idx[t]]);
@@ -135,36 +174,14 @@ public partial class P3dPreviewView : UserControl
                 continue;
             }
             normal.Normalize();
+            normal *= lift;
             for (var k = 0; k < 3; k++)
             {
-                int a = idx[t + k], b = idx[t + (k + 1) % 3];
-                if (!seen.Add(a < b ? ((long)a << 32) | (uint)b : ((long)b << 32) | (uint)a))
-                {
-                    continue;
-                }
-                var along = p[b] - p[a];
-                var side = Vector3D.CrossProduct(normal, along);
-                if (side.LengthSquared < 1e-18)
-                {
-                    continue;
-                }
-                side.Normalize();
-                side *= width;
-                var lift = normal * width * 0.5;
-                var start = positions.Count;
-                positions.Add(p[a] - side + lift);
-                positions.Add(p[a] + side + lift);
-                positions.Add(p[b] + side + lift);
-                positions.Add(p[b] - side + lift);
-                indices.Add(start);
-                indices.Add(start + 1);
-                indices.Add(start + 2);
-                indices.Add(start);
-                indices.Add(start + 2);
-                indices.Add(start + 3);
+                positions.Add(p[idx[t + k]] + normal);
+                uvs.Add(corners[k]);
             }
         }
-        var mesh = new MeshGeometry3D { Positions = positions, TriangleIndices = indices };
+        var mesh = new MeshGeometry3D { Positions = positions, TextureCoordinates = uvs };
         mesh.Freeze();
         return mesh;
     }
@@ -172,10 +189,39 @@ public partial class P3dPreviewView : UserControl
     // ---- performance stats, bottom right ----
 
     private int _frames;
+    private TimeSpan _lastRender;
+    private DateTime _activeUntil;
+    private bool _listening;
+    private double _fps;
     private System.Windows.Threading.DispatcherTimer _statsTimer;
     private readonly System.Diagnostics.Stopwatch _statsClock = new();
 
-    private void OnFrame(object sender, EventArgs e) => _frames++;
+    // Rendering can fire several times per frame (same RenderingTime), and listening to it makes WPF redraw
+    // non-stop, so frames are only counted while the camera moves.
+    private void OnFrame(object sender, EventArgs e)
+    {
+        var time = ((RenderingEventArgs)e).RenderingTime;
+        if (time != _lastRender)
+        {
+            _lastRender = time;
+            _frames++;
+        }
+        if (DateTime.UtcNow > _activeUntil)
+        {
+            CompositionTarget.Rendering -= OnFrame;
+            _listening = false;
+        }
+    }
+
+    private void Moving()
+    {
+        _activeUntil = DateTime.UtcNow.AddSeconds(0.5);
+        if (!_listening && _statsTimer != null)
+        {
+            _listening = true;
+            CompositionTarget.Rendering += OnFrame;
+        }
+    }
 
     private void StartStats()
     {
@@ -185,18 +231,20 @@ public partial class P3dPreviewView : UserControl
             PerfText.Text = "";
             return;
         }
-        CompositionTarget.Rendering += OnFrame;
         _statsClock.Restart();
-        _statsTimer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+        _statsTimer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(0.5) };
         _statsTimer.Tick += (_, _) =>
         {
-            var fps = _frames / Math.Max(0.001, _statsClock.Elapsed.TotalSeconds);
+            if (_frames > 0)
+            {
+                _fps = _frames / Math.Max(0.001, _statsClock.Elapsed.TotalSeconds);
+            }
+            var idle = !_listening;
             _frames = 0;
             _statsClock.Restart();
             var shown = _mesh == null ? 0 : _models.Where(m => m.Model.Material != null).Sum(m => m.Part.Triangles);
-            var memory = GC.GetTotalMemory(false) / 1024 / 1024;
-            // WPF only draws when something changes, so an idle view reads as 0.
-            PerfText.Text = Loc.F("P3dView.Perf", fps < 1 ? "-" : fps.ToString("0"), shown.ToString("N0"), _models.Count, _materials.Count, memory);
+            var memory = Environment.WorkingSet / 1024 / 1024;
+            PerfText.Text = Loc.F("P3dView.Perf", _fps < 1 ? "-" : _fps.ToString("0") + (idle ? "*" : ""), shown.ToString("N0"), _models.Count, _materials.Count, memory);
         };
         _statsTimer.Start();
     }
@@ -204,6 +252,7 @@ public partial class P3dPreviewView : UserControl
     private void StopStats()
     {
         CompositionTarget.Rendering -= OnFrame;
+        _listening = false;
         _statsTimer?.Stop();
         _statsTimer = null;
     }
@@ -294,6 +343,7 @@ public partial class P3dPreviewView : UserControl
         }
 
         _mesh = mesh;
+        SceneRoot.Children.Remove(Parts);
         Parts.Children.Clear();
         _models.Clear();
         _wires.Clear();
@@ -302,7 +352,7 @@ public partial class P3dPreviewView : UserControl
         foreach (var part in mesh.Parts.OrderBy(p => TextureResolver.HasAlpha(TextureResolver.Normalize(p.Texture))))
         {
             var material = IsVisible(part.Texture) ? MaterialFor(part) : null;
-            var model = new GeometryModel3D(part.Mesh, material) { BackMaterial = material };
+            var model = new GeometryModel3D(part.Mesh, material) { BackMaterial = TwoSided(part) ? material : null };
             if (part.Offset.LengthSquared > 0)
             {
                 model.Transform = new TranslateTransform3D(part.Offset);
@@ -310,6 +360,8 @@ public partial class P3dPreviewView : UserControl
             Parts.Children.Add(model);
             _models.Add((part, model));
         }
+        // Before the wire layer: whatever is drawn later ends up on top.
+        SceneRoot.Children.Insert(SceneRoot.Children.IndexOf(Wires), Parts);
         Overlay.Text = mesh.Parts.Count == 0 ? Loc.T("P3dView.NoGeometry") : "";
         if (_shading == "wire")
         {
@@ -348,7 +400,7 @@ public partial class P3dPreviewView : UserControl
         {
             while (true)
             {
-                var pending = _vm.TextureItems.Where(i => !_results.ContainsKey(i.Key)).Take(4).ToList();
+                var pending = _vm.TextureItems.Where(i => !_results.ContainsKey(i.Key)).Take(Math.Max(4, Environment.ProcessorCount)).ToList();
                 if (pending.Count == 0)
                 {
                     break;
@@ -363,7 +415,9 @@ public partial class P3dPreviewView : UserControl
                 {
                     try
                     {
-                        return resolver.Resolve(item.Path);
+                        var found = resolver.Resolve(item.Path);
+                        Thumb(found.Image);
+                        return found;
                     }
                     catch (Exception)
                     {
@@ -553,7 +607,7 @@ public partial class P3dPreviewView : UserControl
 
     private void Describe(ModelTextureItem item, TextureResult result)
     {
-        item.Thumb = result.Image;
+        item.Thumb = Thumb(result.Image);
         item.Swatch = result.Color is Color color ? new SolidColorBrush(color) : null;
         item.Location = result.Location;
         item.File = result.File;
@@ -576,10 +630,33 @@ public partial class P3dPreviewView : UserControl
         item.StatusBrush = Resource(result.Found ? "PboSpy.Success" : "PboSpy.Warning");
     }
 
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<BitmapSource, BitmapSource> Thumbs = new();
+
+    // The list shows 40 px squares; scaling a 1024 texture down on every layout pass was a visible stutter.
+    private static BitmapSource Thumb(BitmapSource image) => image == null ? null : Thumbs.GetValue(image, source =>
+    {
+        var scale = 64.0 / Math.Max(source.PixelWidth, source.PixelHeight);
+        if (scale >= 1)
+        {
+            return source;
+        }
+        var small = new TransformedBitmap(source, new ScaleTransform(scale, scale));
+        var copy = new WriteableBitmap(small);
+        copy.Freeze();
+        return copy;
+    });
+
     private Brush Resource(string key) => TryFindResource(key) as Brush;
+
+    // Drawing back faces doubles the work; the game culls them too, except on see-through (_ca) parts.
+    private static bool TwoSided(ModelPart part) => TextureResolver.HasAlpha(TextureResolver.Normalize(part.Texture));
 
     private Material MaterialFor(ModelPart part)
     {
+        if (_shading == "wire")
+        {
+            return WireFill();
+        }
         if (_vm != null && _vm.ShowTextures && _vm.ShowDetailMaps && _detailed.TryGetValue(PartKey(part), out var detailed))
         {
             return detailed;
@@ -618,7 +695,7 @@ public partial class P3dPreviewView : UserControl
             if (model.Material != material)
             {
                 model.Material = material;
-                model.BackMaterial = material;
+                model.BackMaterial = TwoSided(part) || _shading == "wire" ? material : null;
             }
         }
     }
@@ -879,12 +956,13 @@ public partial class P3dPreviewView : UserControl
 
     private void UpdateCamera()
     {
+        Moving();
         var yaw = _yaw * Math.PI / 180;
         var pitch = _pitch * Math.PI / 180;
         var direction = new Vector3D(Math.Cos(pitch) * Math.Sin(yaw), Math.Sin(pitch), Math.Cos(pitch) * Math.Cos(yaw));
         Camera.Position = _target + direction * _distance;
         Camera.LookDirection = -direction * _distance;
-        Camera.NearPlaneDistance = Math.Max(0.001, _distance * 0.01);
+        Camera.NearPlaneDistance = Math.Max(0.001, _distance * 0.05);
         Camera.FarPlaneDistance = _distance + _radius * 6;
         var light = -direction;
         light.Y -= 0.35;
