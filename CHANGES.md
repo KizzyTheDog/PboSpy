@@ -110,3 +110,8 @@
 - Now downloads directly from GitHub (the repo is public), with `gh` only as a fallback, and reads both of `gh`'s outputs.
 - A half-finished earlier download is thrown away instead of reused.
 - 2.1.0 and 2.1.1 have the broken updater, so those need 2.1.2 installed by hand once.
+
+## v2.1.3
+
+- The real reason updates never arrived: GitHub's file host was slow from this PC (about 140 KB/s, one 5 MB request took over 2 minutes), and the download gave up at HttpClient's default 100 s. That error wasn't the kind the fallback caught, so it failed silently.
+- It now streams to a `.part` file with a 30-minute limit, uses the normal release download link, and any failure falls back to `gh`.

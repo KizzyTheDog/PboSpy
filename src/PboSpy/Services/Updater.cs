@@ -102,7 +102,7 @@ public static class Updater
             using var client = Client();
             return JsonNode.Parse(await client.GetStringAsync($"https://api.github.com/repos/{Repo}/releases/latest")) as JsonObject;
         }
-        catch (HttpRequestException)
+        catch (Exception)
         {
             var viaCli = Gh($"api repos/{Repo}/releases/latest");
             return viaCli == null ? throw new InvalidOperationException("GitHub can't be reached.") : JsonNode.Parse(viaCli) as JsonObject;
@@ -112,15 +112,25 @@ public static class Updater
     private static async Task Download(string tag, JsonObject asset, string zip)
     {
         var folder = Path.GetDirectoryName(zip);
+        // GitHub's file host can be slow (seen at ~140 KB/s), so no short timeout, and streamed to disk.
+        var partial = zip + ".part";
         try
         {
             using var client = Client();
-            client.DefaultRequestHeaders.Accept.ParseAdd("application/octet-stream");
-            await File.WriteAllBytesAsync(zip, await client.GetByteArrayAsync(asset["url"].GetValue<string>()));
+            client.Timeout = TimeSpan.FromMinutes(30);
+            using (var response = await client.GetAsync(asset["browser_download_url"].GetValue<string>(), HttpCompletionOption.ResponseHeadersRead))
+            {
+                response.EnsureSuccessStatusCode();
+                await using var source = await response.Content.ReadAsStreamAsync();
+                await using var target = File.Create(partial);
+                await source.CopyToAsync(target);
+            }
+            File.Move(partial, zip, true);
             return;
         }
-        catch (HttpRequestException)
+        catch (Exception)
         {
+            File.Delete(partial);
         }
         if (Gh($"release download {tag} -R {Repo} -p \"{asset["name"]}\" -D \"{folder}\" --clobber") == null || !File.Exists(zip))
         {

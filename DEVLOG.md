@@ -2,6 +2,11 @@
 
 Newest first. Each commit adds an entry: what changed, why, and what was checked.
 
+## 2026-09-30 · v2.1.3 · updater download timeout
+
+- The real reason updates never arrived: GitHub's file host was slow from this PC (about 140 KB/s, one 5 MB request took over 2 minutes), and the download gave up at HttpClient's default 100 s. That error wasn't the kind the fallback caught, so it failed silently.
+- It now streams to a `.part` file with a 30-minute limit, uses the normal release download link, and any failure falls back to `gh`.
+
 ## 2026-09-30 · v2.1.2 · updater fix
 
 - The updater could stall mid-download: it started `gh` with its error output redirected but never read it, `gh` writes progress there, and once that pipe was full `gh` waited forever (found testing 2.1.0 → 2.1.1: the zip stopped at 1.4 of 5.1 MB).
