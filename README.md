@@ -2,7 +2,7 @@
 
 A Windows tool for opening Arma 3 PBOs and turning what's inside into things Blender and Roblox Studio can use: models, textures, sounds and configs.
 
-This is a private fork of [rvost/PboSpy](https://github.com/rvost/PboSpy) (MIT). What's changed is listed in [CHANGES.md](CHANGES.md), each commit's notes are in [DEVLOG.md](DEVLOG.md), and open work is in [TODO.md](TODO.md).
+This is a fork of [rvost/PboSpy](https://github.com/rvost/PboSpy) (MIT). What's changed is listed in [CHANGES.md](CHANGES.md), each commit's notes are in [DEVLOG.md](DEVLOG.md), and open work is in [TODO.md](TODO.md).
 
 ## What it does
 
@@ -32,7 +32,7 @@ Debinarizing needs `BisDll.dll`. It isn't in this repository, because it isn't r
 
 ## Releases and updates
 
-A release is a tag `vX.Y.Z` with `PboSpy-X.Y.Z.zip` attached, which is the build output without BisDll.dll. PboSpy checks the latest release at startup. It downloads the release in the background and asks before restarting; "No" updates when you close it. Because the repository is private, the check uses the GitHub CLI (`gh auth login` once), or a read-only token set in Settings > Updates.
+A release is a tag `vX.Y.Z` with `PboSpy-X.Y.Z.zip` attached, which is the build output without BisDll.dll. PboSpy checks the latest release at startup. It downloads the release in the background and asks before restarting; "No" updates when you close it.
 
 ## Credits
 
