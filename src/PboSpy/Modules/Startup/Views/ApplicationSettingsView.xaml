@@ -1,0 +1,122 @@
+<UserControl x:Class="PboSpy.Modules.Startup.Views.ApplicationSettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:cal="http://caliburnmicro.com"
+             xmlns:loc="clr-namespace:PboSpy.Localization">
+    <UserControl.Resources>
+        <Style TargetType="CheckBox" BasedOn="{StaticResource {x:Type CheckBox}}">
+            <Setter Property="Margin" Value="0 3"/>
+        </Style>
+        <Style TargetType="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0 3 10 3"/>
+        </Style>
+        <Style x:Key="Header" TargetType="TextBlock">
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0 12 0 4"/>
+        </Style>
+    </UserControl.Resources>
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="4">
+            <TextBlock Style="{StaticResource Header}" Text="{loc:Tr Settings.Appearance}" Margin="0 0 0 4"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="170"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <TextBlock Text="{loc:Tr Settings.Language}"/>
+                <ComboBox Grid.Column="1" ItemsSource="{Binding Languages}" SelectedItem="{Binding SelectedLanguage}"
+                          DisplayMemberPath="NativeName" Margin="0 2"/>
+                <TextBlock Grid.Row="1" Text="{loc:Tr Settings.Theme}"/>
+                <ComboBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding Themes}" SelectedItem="{Binding SelectedTheme}"
+                          DisplayMemberPath="Name" Margin="0 2"/>
+            </Grid>
+            <TextBlock Text="{loc:Tr Settings.PreviewHint}" Opacity="0.7" TextWrapping="Wrap" Margin="170 0 0 4"/>
+            <CheckBox IsChecked="{Binding OpenFullscreen}" Content="{loc:Tr Settings.OpenMaximized}"/>
+            <CheckBox IsChecked="{Binding ShowStartPage}" Content="{loc:Tr Start.ShowOnStartup}"/>
+            <CheckBox IsChecked="{Binding AskAboutStartPage}" Content="{loc:Tr Settings.AskStartPage}"/>
+            <CheckBox IsChecked="{Binding ConfirmExit}" Content="{loc:Tr Settings.ConfirmExit}"/>
+
+            <TextBlock Style="{StaticResource Header}" Text="{loc:Tr Settings.Explorer}"/>
+            <CheckBox IsChecked="{Binding ShowFileSizes}" Content="{loc:Tr Settings.ShowSizes}"/>
+            <CheckBox IsChecked="{Binding SingleClickPreview}" Content="{loc:Tr Settings.SingleClickPreview}"/>
+            <CheckBox IsChecked="{Binding HideFilteredFiles}" Content="{loc:Tr Explorer.Filter.Hide}"/>
+            <CheckBox IsChecked="{Binding DragOutConvertsImages}" Content="{loc:Tr Settings.DragConvert}"/>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="{loc:Tr Settings.RecentCount}"/>
+                <TextBox Width="50" Text="{Binding RecentFileCount}"/>
+                <Button Content="{loc:Tr Settings.ClearRecent}" cal:Message.Attach="ClearRecentFiles" Padding="8 1" Margin="8 0 0 0"/>
+            </StackPanel>
+
+            <TextBlock Style="{StaticResource Header}" Text="{loc:Tr Settings.Export}"/>
+            <CheckBox IsChecked="{Binding RememberExportOptions}" Content="{loc:Tr Settings.RememberExport}"/>
+            <CheckBox IsChecked="{Binding OpenFolderAfterExport}" Content="{loc:Tr BulkExport.OpenFolder}"/>
+            <CheckBox IsChecked="{Binding ConfirmBeforeOverwrite}" Content="{loc:Tr Settings.ConfirmOverwrite}"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="170"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <TextBlock Text="{loc:Tr Settings.DefaultImage}"/>
+                <ComboBox Grid.Column="1" ItemsSource="{Binding ImageFormats}" SelectedItem="{Binding DefaultImageFormat}" Width="140" HorizontalAlignment="Left" Margin="0 2"/>
+                <TextBlock Grid.Row="1" Text="{loc:Tr Settings.DefaultAudio}"/>
+                <ComboBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding AudioFormats}" SelectedItem="{Binding DefaultAudioFormat}" Width="140" HorizontalAlignment="Left" Margin="0 2"/>
+                <TextBlock Grid.Row="2" Text="{loc:Tr BulkExport.Bitrate}"/>
+                <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal">
+                    <Slider Width="180" Minimum="64" Maximum="320" TickFrequency="32" IsSnapToTickEnabled="True" Value="{Binding AudioBitrate}" VerticalAlignment="Center"/>
+                    <TextBlock Margin="8 0 0 0"><Run Text="{Binding AudioBitrate}"/> kbps</TextBlock>
+                </StackPanel>
+                <TextBlock Grid.Row="3" Text="{loc:Tr BulkExport.OggQuality}"/>
+                <StackPanel Grid.Row="3" Grid.Column="1" Orientation="Horizontal">
+                    <Slider Width="180" Minimum="0" Maximum="10" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding AudioQuality}" VerticalAlignment="Center"/>
+                    <TextBlock Margin="8 0 0 0" Text="{Binding AudioQuality}"/>
+                </StackPanel>
+                <TextBlock Grid.Row="4" Text="ffmpeg"/>
+                <DockPanel Grid.Row="4" Grid.Column="1" Margin="0 2">
+                    <Button DockPanel.Dock="Right" Content="{loc:Tr Common.Browse}" cal:Message.Attach="BrowseFfmpeg" Padding="8 1" Margin="6 0 0 0"/>
+                    <TextBox Text="{Binding FfmpegPath, UpdateSourceTrigger=PropertyChanged}"/>
+                </DockPanel>
+            </Grid>
+            <TextBlock Text="{Binding FfmpegStatus}" Opacity="0.7" TextWrapping="Wrap" Margin="170 0 0 0"/>
+
+            <TextBlock Style="{StaticResource Header}" Text="{loc:Tr Settings.Mcp}"/>
+            <TextBlock Text="{loc:Tr Settings.McpHint}" Opacity="0.7" TextWrapping="Wrap" Margin="0 0 0 6"/>
+            <WrapPanel>
+                <Button Content="{loc:Tr Settings.McpAdd}" cal:Message.Attach="AddToClaude" Padding="8 2" Margin="0 0 6 6"/>
+                <Button Content="{loc:Tr Settings.McpCopy}" cal:Message.Attach="CopyMcpConfig" Padding="8 2" Margin="0 0 6 6"/>
+            </WrapPanel>
+            <TextBlock Text="{Binding McpStatus}" Opacity="0.8" TextWrapping="Wrap"/>
+
+            <TextBlock Style="{StaticResource Header}" Text="{loc:Tr Update.Header}"/>
+            <CheckBox IsChecked="{Binding AutoUpdate}" Content="{loc:Tr Update.Auto}" ToolTip="{loc:Tr Update.AutoTip}"/>
+            <WrapPanel>
+                <Button Content="{loc:Tr Update.CheckNow}" cal:Message.Attach="CheckForUpdates" Padding="8 2" Margin="0 0 10 6"/>
+                <TextBlock Text="{Binding VersionText}" Opacity="0.8" VerticalAlignment="Center" Margin="0 0 0 6"/>
+            </WrapPanel>
+            <StackPanel Orientation="Horizontal" ToolTip="{loc:Tr Update.TokenTip}">
+                <TextBlock Text="{loc:Tr Update.Token}" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                <TextBox Text="{Binding UpdateToken}" Width="260"/>
+            </StackPanel>
+
+            <TextBlock Style="{StaticResource Header}" Text="{loc:Tr Settings.Maintenance}"/>
+            <WrapPanel>
+                <Button Content="{loc:Tr Settings.OpenInstallFolder}" cal:Message.Attach="OpenInstallFolder" Padding="8 2" Margin="0 0 6 6"/>
+                <Button Content="{loc:Tr Settings.OpenSettingsFolder}" cal:Message.Attach="OpenSettingsFolder" Padding="8 2" Margin="0 0 6 6"/>
+                <Button Content="{loc:Tr Settings.OpenLanguagesFolder}" cal:Message.Attach="OpenLanguagesFolder" Padding="8 2" Margin="0 0 6 6"/>
+                <Button Content="{loc:Tr Settings.ClearTemp}" cal:Message.Attach="ClearTempFiles" Padding="8 2" Margin="0 0 6 6"/>
+            </WrapPanel>
+            <TextBlock Text="{loc:Tr Settings.LanguagesHint}" Opacity="0.7" TextWrapping="Wrap"/>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

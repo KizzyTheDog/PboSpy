@@ -1,0 +1,121 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net8.0-windows</TargetFramework>
+		<LangVersion>latest</LangVersion>
+		<Version>2.1.0</Version>
+		<Product>PboSpy</Product>
+		<Description>PBO explorer and converter for Arma 3</Description>
+		<UseWPF>true</UseWPF>
+		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<ApplicationManifest>app.manifest</ApplicationManifest>
+		<StartupObject>PboSpy.Program</StartupObject>
+		<ApplicationIcon>Resources\PboSpy.ico</ApplicationIcon>
+		<RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Compile Remove="Views\**" />
+		<EmbeddedResource Remove="Views\**" />
+		<None Remove="Resources\Icons\*.png" />
+		<None Remove="Views\**" />
+		<Page Remove="Views\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Using Include="System.Collections.ObjectModel" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="GeminiWpf" Version="1.0.60-beta" />
+		<Using Include="System.ComponentModel.Composition" />
+		<Using Include="Caliburn.Micro" />
+		<Using Include="Gemini.Framework" />
+		<Using Include="Gemini.Framework.Services" />
+		<Using Include="Gemini.Framework.Menus" />
+		<Using Include="Gemini.Framework.ToolBars" />
+		<Using Include="Gemini.Framework.Commands" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Gemini.Modules.CodeEditor" Version="1.0.60-beta" />
+		<PackageReference Include="Gemini.Modules.PropertyGrid" Version="1.0.60-beta" />
+		<PackageReference Include="Gemini.Modules.Output" Version="1.0.60-beta" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Clowd.Squirrel" Version="2.9.42" />
+		<PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
+		<PackageReference Include="Serilog" Version="2.12.0" />
+		<PackageReference Include="Serilog.Extensions.Logging" Version="3.1.0" />
+		<PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+		<PackageReference Include="SixLabors.ImageSharp" Version="2.1.13" />
+		<PackageReference Include="NAudio" Version="2.2.1" />
+		<PackageReference Include="NVorbis" Version="0.10.5" />
+		<PackageReference Include="OggVorbisEncoder" Version="1.2.2" />
+		<PackageReference Include="WindowsAPICodePack-Shell" Version="1.1.1" />
+		<PackageReference Include="WPFHexaEditor" Version="2.1.7" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\libs\bis-file-formats\BIS.P3D\BIS.P3D.csproj" />
+		<ProjectReference Include="..\..\libs\bis-file-formats\BIS.PAA\BIS.PAA.csproj" />
+		<ProjectReference Include="..\..\libs\bis-file-formats\BIS.PAA.Encoder\BIS.PAA.Encoder.csproj" />
+		<ProjectReference Include="..\..\libs\bis-file-formats\BIS.PBO\BIS.PBO.csproj" />
+		<ProjectReference Include="..\..\libs\bis-file-formats\BIS.WRP\BIS.WRP.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Resource Include="Resources\Icons\*.png" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Include="Localization\Languages\*.json" LogicalName="PboSpy.Localization.Languages.%(Filename)%(Extension)" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="Resources\PboSpy.ico" />
+	</ItemGroup>
+
+	<!-- BisDll (ODOL -> MLOD) is not redistributable; the build script pulls it from the user's own P3D Debinarizer. -->
+	<ItemGroup Condition="Exists('..\..\libs\BisDll\BisDll.dll')">
+		<Reference Include="BisDll">
+			<HintPath>..\..\libs\BisDll\BisDll.dll</HintPath>
+			<Private>true</Private>
+		</Reference>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Update="Properties\Settings.Designer.cs">
+			<DesignTimeSharedInput>True</DesignTimeSharedInput>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>Settings.settings</DependentUpon>
+		</Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="Properties\Settings.settings">
+			<Generator>SettingsSingleFileGenerator</Generator>
+			<LastGenOutput>Settings.Designer.cs</LastGenOutput>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+		<EditorConfigFiles Remove=".editorconfig" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include=".editorconfig" />
+	</ItemGroup>
+
+</Project>

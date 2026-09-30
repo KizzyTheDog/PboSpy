@@ -1,0 +1,35 @@
+<w:ToolWindow x:Class="PboSpy.Modules.P3dTools.Views.TextPreviewWindow"
+              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+              xmlns:w="clr-namespace:PboSpy.Modules.Windows"
+              xmlns:loc="clr-namespace:PboSpy.Localization"
+              Width="900" Height="620" MinWidth="560" MinHeight="360" WindowStartupLocation="CenterOwner">
+    <Grid Margin="12 10 12 12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition x:Name="ListColumn" Width="260"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <TextBlock Grid.ColumnSpan="2" x:Name="InfoText" Style="{StaticResource PboSpy.Subtitle}" Margin="0 0 0 8"/>
+        <ListBox Grid.Row="1" x:Name="ItemsList" Style="{StaticResource PboSpy.ListBox}" FontFamily="Consolas"
+                 DisplayMemberPath="Name" SelectionChanged="OnSelectionChanged" Margin="0 0 8 0"/>
+        <TextBox Grid.Row="1" Grid.Column="1" x:Name="ContentBox" IsReadOnly="True" FontFamily="Consolas" FontSize="12.5"
+                 AcceptsReturn="True" TextWrapping="NoWrap" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
+                 Background="{DynamicResource PboSpy.Deep}" Foreground="{DynamicResource PboSpy.Text}"
+                 BorderBrush="{DynamicResource PboSpy.Border}" Padding="4"/>
+
+        <DockPanel Grid.Row="2" Grid.ColumnSpan="2" Margin="0 10 0 0">
+            <Button Content="{loc:Tr P3D.Tp.BtnCopy}" Style="{StaticResource PboSpy.Button}" Click="OnCopy"/>
+            <Button Content="{loc:Tr P3D.Tp.BtnSaveAs}" Style="{StaticResource PboSpy.Button}" Margin="6 0 0 0" Click="OnSaveAs"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="{loc:Tr P3D.Tp.BtnClose}" Style="{StaticResource PboSpy.Button}" Margin="0 0 6 0" IsCancel="True" Click="OnClose"/>
+                <Button Content="{loc:Tr P3D.Tp.BtnSave}" Style="{StaticResource PboSpy.AccentButton}" Click="OnSave"/>
+            </StackPanel>
+        </DockPanel>
+    </Grid>
+</w:ToolWindow>

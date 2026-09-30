@@ -1,0 +1,94 @@
+# PboSpy 2.0 changes
+
+## Removed or replaced
+
+| What | Why / what replaces it |
+|---|---|
+| About page opening as the default document | Replaced by the Start page. Closing it asks once whether to keep showing it. |
+| Gemini's "General" settings page | It saved a stale theme name over the one you picked, so the theme couldn't be changed back. Its options now live in PboSpy's own settings page. |
+| Settings stored in `user.config` (Properties.Settings) | Tied to the exe path, so settings were lost on every rebuild or move. Replaced by `%AppData%\PboSpy\settings.json`. |
+| Dock layout file next to the exe | Moved to `%AppData%\PboSpy\layout.bin` (a relative path gave an empty layout depending on the start folder). |
+| Modal export and convert dialogs | They blocked the main window. They're now normal windows you can keep open. |
+| BisDll's own rvmat writer (P3D Tools) | Wrote `Stage01`/`Stage11`, unquoted strings and `PS`/`VS` shader prefixes that Arma won't read. Replaced by PboSpy's own writer. |
+| Python requirement of the "aundrei pbr" scripts | Rebuilt in C# inside PboSpy (PBR Texture Maker). PNG pre-conversion and batch files are no longer needed. |
+| Hard-coded light background in text and model previews | Text previews (SQF, configs, rvmats…) and the P3D details view now follow the theme. |
+| Extract/Open items that don't apply in the explorer's right-click menu | Hidden for items they can't act on (for example Extract PBO on a PNG). |
+| .NET 6 target | Now .NET 8. |
+
+## Added
+
+- **Single click / double click previews.** A single click shows the file in one reusable preview tab (title ends in "(preview)"); a double click opens it in its own tab and switches to it. Turn it off in Settings.
+- **3D model preview.** P3D files open in a 3D view with textures: LOD picker, rotate/pan/zoom, texture list showing where each texture was found. Textures come from opened PBOs, folders around the model and a texture folder you can set (for example your P: drive). Missing ones can be picked by hand with "…". Right-click a P3D and choose "Open model preview".
+- **Rename.** F2 or right-click > Rename. Files and folders on disk are renamed for real. Files inside a PBO keep their stored name, and the new name is used when exporting, extracting or dragging out (shown in italics).
+- **Recover scrambled names** (right-click an obfuscated PBO). Works out readable names from configs, models, materials and scripts, and can extract the PBO with those names while fixing the references inside configs, rvmats, scripts and models.
+- **MCP server.** `PboSpy.exe --mcp` lets Claude Desktop list, read, extract and convert PBOs, textures, models and sounds. Settings > Claude (MCP) adds it to Claude Desktop for you (or copies the config).
+- Obfuscated (UTF-8) file names are shown as real letters instead of mojibake.
+
+## Fixed
+
+- Sound preview: pressing Play did nothing (the position timer was created on a worker thread and the float output was refused by some drivers).
+- Text previews always white with black text whatever the theme.
+
+## 2026-09-29
+
+### Added
+
+- **Presets** (Tools > Presets…, Ctrl+Shift+G). Pick a game, then buttons per job open the right tools already set up: Arma 3 has "Import a vehicle into Blender" in order (open PBO, recover names, debinarize, PAA → PNG, PBR maps), Models, Textures, Sounds and Configs. Microsoft Flight Simulator 2024 is listed as planned.
+- **Explorer search filters the tree** like Roblox Studio: only matches and the folders leading to them stay visible, and those folders open. Clearing the search folds the tree back.
+- **Hide from the explorer** on folders (right-click). Takes the folder out of the tree, nothing is touched on disk.
+- **Convert window: edit the inputs.** Add files…, Add folder… and Remove (or Delete key). Files and folders from different places can be mixed; each folder keeps its own structure.
+- **3D preview: linked maps.** Each material's rvmat is read (or files named like the texture are used) to find `_nohq`, `_smdi` and `_as`. The texture list shows what was linked. With "Detail maps" on, the normal map is baked in as lighting and `_smdi` gives the shine (WPF 3D can't do real normal mapping). See-through `_ca` parts draw last so they don't hide what's behind them.
+- **3D preview: Blender-style cursor wrap.** Dragging past an edge of the view carries on from the opposite edge.
+- **Texture lookup** also tries names as they look after extraction (percent-encoded, or `_` for `*`/`?`).
+- **Builder: "Delete old ones first".** Removes shortcuts and right-click entries from earlier builds, including shortcuts that point at a PboSpy.exe in an old folder, before making new ones.
+- Blender addon (auto_texture_linker 1.8.0): **Split Meshes Over Limit** (default 20,000 triangles, Roblox's MeshPart limit). Keeps whole loose parts together, packs them by position, and cuts a single too-big part in half until it fits.
+
+### Changed
+
+- **3D preview is faster**: normals are worked out in the background instead of on the UI thread when WPF first draws; decoded textures are shared between previews (up to 384 MB); the last 4 parsed models and their meshes are kept, so switching back to one is instant; PBO entry lists are indexed once per PBO.
+- Convert window title says "Convert Files" or "Convert Folder" depending on what opened it.
+- Opening a folder only adds the folder to Recent, not every file under it.
+- Blender addon: Remove Proxy Triangles now recognises ArmaToolbox's `@@armaproxy` groups (it only knew `proxy:` before, so it fell back to guessing by shape). A mesh that is only proxy triangles is deleted as an object. The emptied proxy groups and ArmaToolbox's proxy list are cleared. "Keep positions as empties" is now off by default and the empties are parented to their mesh.
+
+### Fixed
+
+- Changing the output folder in the Convert window sent it behind the main window (looked like it closed). The folder picker now belongs to the Convert window.
+- Opening a folder expanded every subfolder (the inherited theme style did it).
+- Build error: ambiguous `Action` in the 3D preview.
+
+### Removed
+
+- Nothing removed.
+
+## 2026-09-30
+
+- Added: Convert window "Select the file(s) when done", next to "Open the folder when done". Greyed out (keeps its tick) while the folder option is off. Selects what the run wrote in the folder that got most of it.
+- Fixed: opening a file from Windows Explorer (or P3D Tools' "Open in PboSpy") could open both a "(preview)" tab and a normal tab for it.
+- Changed: opening a folder again removes the old per-file Recent entries under it.
+- Added: **Export OBJ…** in the 3D preview. Saves the shown LOD (proxy triangles left out) as OBJ + MTL for Blender, with the colour, normal (`map_Bump`) and `_smdi` (`map_Ks`) textures as full size PNGs in `<name>_textures`. `_ca` textures also go in as alpha.
+- Checked: RTM files extract with a valid `BMTR` header now. Their "obfuscation" was the LZSS bug; there's nothing else to undo.
+
+### Checked
+
+- ODOL v75 (cca.p3d): debinarizes to MLOD, model.cfg extraction gives the skeleton (255 bones) and 282 animation classes. Every bone that has geometry has its named selection in the MLOD; the 11 without are bones with no geometry in the original either.
+
+## 2026-09-30 (later)
+
+- Added: **Export model** (3D preview button, right-click .p3d > P3D > Export as GLB, MCP `p3d_export`). GLB with PBR materials: colour texture, `_nohq` turned into a plain normal map (DXT5nm unpacked, green flipped), `_smdi` turned into a metallic/roughness map (same maths as the PBR Texture Maker), `_ca` as alpha blend. OBJ + MTL + PNGs as the other choice. Textures capped at 2048 and shared between materials. Checked: cca.p3d imports into Blender with all 224,208 triangles and normal maps on 22 of 28 materials.
+- Added: opened folders **refresh by themselves** when files are added, deleted or renamed on disk (expanded folders stay as they are; hidden folders stay hidden).
+- Added: **Open Folder** can pick several folders at once.
+- Changed: the Convert window only shows the sections that apply to what's in it, and ticks their conversion (not when a preset already chose). Its background and input list now follow the theme.
+- Changed: the 3D preview's texture search also scans the folders around the model (up to two levels up) and matches names loosely (case, extension, separators, percent-encoding), like the Blender addon.
+- Changed: `(argb…)`/`(rgb…)` textures count as procedural even without the leading `#`, so they don't show as missing.
+- Fixed: debinarizing several .p3d files from the explorer wrote the results into a temp folder; they now go to the files' own folder.
+
+## 2026-09-30 (export options)
+
+- Added: **Export model window** (3D preview "Export model…", right-click .p3d > P3D > Export model). Choose:
+  - format: GLB, glTF (separate .bin + PNGs), FBX (binary 7.4) or OBJ. All four import into Roblox Studio and Blender.
+  - max texture size (512 to 8192; Roblox uses up to 1024)
+  - split parts over N triangles (default 20,000, Roblox's MeshPart limit); pieces are cut along the part's longest side
+  - an RVMAT folder searched first for materials, and the texture folder
+  Settings are remembered. MCP `p3d_export` takes `max_texture`, `split_at` and `rvmat_folder`.
+  Checked on cca.p3d in Blender: all four formats import with 224,208 triangles, 35 objects, none over 20,000, same size and orientation.
+- Added: TGA as an image output format in Convert (Roblox and Blender read it). With PNG, JPG and BMP, and WAV/MP3/OGG/FLAC for audio, every image and sound type Roblox imports is covered.

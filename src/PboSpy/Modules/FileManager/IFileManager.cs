@@ -1,0 +1,30 @@
+﻿using PboSpy.Interfaces;
+
+namespace PboSpy.Modules.FileManager;
+
+public class FileManagerEventArgs
+{
+    public IPersistentItem File { get; }
+
+    public FileManagerEventArgs(IPersistentItem file)
+    {
+        File = file;
+    }
+}
+
+public interface IFileManager
+{
+    ICollection<ITreeItem> FileTree { get; }
+
+    HashSet<string> Hidden { get; }
+
+    event EventHandler<FileManagerEventArgs> FileLoaded;
+    event EventHandler<FileManagerEventArgs> FileRemoved;
+
+    Task LoadSupportedFiles(IEnumerable<string> fileNames);
+    void Close(IPersistentItem file);
+    void CloseAll();
+
+    /// <summary>Renames a file or folder on disk and reloads it in place. Returns the new tree item.</summary>
+    Task<ITreeItem> Rename(ITreeItem item, string newName);
+}

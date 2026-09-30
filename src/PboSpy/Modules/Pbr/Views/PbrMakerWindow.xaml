@@ -1,0 +1,158 @@
+<w:ToolWindow x:Class="PboSpy.Modules.Pbr.Views.PbrMakerWindow"
+              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+              xmlns:w="clr-namespace:PboSpy.Modules.Windows"
+              xmlns:loc="clr-namespace:PboSpy.Localization"
+              Title="{loc:Tr Pbr.Title}" Width="1080" Height="800" MinWidth="820" MinHeight="560" AllowDrop="True">
+    <w:ToolWindow.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+
+        <DataTemplate x:Key="SlotTemplate">
+            <StackPanel Width="160" Margin="0 0 10 0">
+                <Border Width="84" Height="84" HorizontalAlignment="Left" BorderThickness="1" CornerRadius="3"
+                        BorderBrush="{DynamicResource PboSpy.Border}" Background="{DynamicResource PboSpy.Deep}">
+                    <Grid>
+                        <Image Source="{Binding Thumb}" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"
+                               ToolTip="{Binding Tooltip}"/>
+                        <TextBlock Text="—" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   Foreground="{DynamicResource PboSpy.TextDim}"
+                                   Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVis}}"/>
+                    </Grid>
+                </Border>
+                <TextBlock Text="{Binding Label}" FontSize="11" Margin="0 4 0 2" Foreground="{DynamicResource PboSpy.TextDim}"/>
+                <ComboBox ItemsSource="{Binding Candidates}" SelectedItem="{Binding Selected}" DisplayMemberPath="FileName"
+                          FontSize="11"/>
+            </StackPanel>
+        </DataTemplate>
+    </w:ToolWindow.Resources>
+
+    <Grid Margin="18 14 18 12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <DockPanel>
+            <ToggleButton DockPanel.Dock="Right" Style="{StaticResource PboSpy.Button}" Padding="8 3" VerticalAlignment="Top"
+                          ToolTip="{loc:Tr Window.KeepOnTop}" Content="📌"
+                          IsChecked="{Binding Topmost, RelativeSource={RelativeSource AncestorType=Window}}"/>
+            <StackPanel>
+                <TextBlock Text="{loc:Tr Pbr.Title}" Style="{StaticResource PboSpy.Title}" Foreground="{DynamicResource PboSpy.Accent}"/>
+                <TextBlock Text="{loc:Tr Pbr.Subtitle}" Style="{StaticResource PboSpy.Subtitle}" Margin="0 2 0 0" MaxWidth="900" HorizontalAlignment="Left"/>
+            </StackPanel>
+        </DockPanel>
+
+        <Border Grid.Row="1" Style="{StaticResource PboSpy.Separator}"/>
+
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <TextBlock Text="{loc:Tr Pbr.Input}" Style="{StaticResource PboSpy.Label}"/>
+            <TextBox Grid.Column="1" x:Name="InputBox" Style="{StaticResource PboSpy.TextBox}" ToolTip="{loc:Tr Pbr.InputTip}"/>
+            <StackPanel Grid.Column="2" Orientation="Horizontal">
+                <Button Content="{loc:Tr Common.Browse}" Style="{StaticResource PboSpy.Button}" Margin="6 0 0 0" Click="OnPickInput"/>
+            </StackPanel>
+            <TextBlock Grid.Row="1" Text="{loc:Tr Pbr.Output}" Style="{StaticResource PboSpy.Label}" Margin="0 8 10 0"/>
+            <TextBox Grid.Row="1" Grid.Column="1" x:Name="OutputBox" Style="{StaticResource PboSpy.TextBox}" Margin="0 8 0 0"/>
+            <StackPanel Grid.Row="1" Grid.Column="2" Orientation="Horizontal" Margin="0 8 0 0">
+                <Button Content="{loc:Tr Common.Browse}" Style="{StaticResource PboSpy.Button}" Margin="6 0 0 0" Click="OnPickOutput"/>
+                <Button Content="{loc:Tr P3D.Main.BtnOpen}" Style="{StaticResource PboSpy.Button}" Margin="6 0 0 0" Click="OnOpenOutput"/>
+            </StackPanel>
+        </Grid>
+
+        <WrapPanel Grid.Row="3" Margin="0 10 0 0">
+            <WrapPanel.Resources>
+                <Style TargetType="CheckBox" BasedOn="{StaticResource {x:Type CheckBox}}">
+                    <Setter Property="Foreground" Value="{DynamicResource PboSpy.Text}"/>
+                    <Setter Property="Margin" Value="0 4 18 4"/>
+                    <Setter Property="VerticalAlignment" Value="Center"/>
+                </Style>
+            </WrapPanel.Resources>
+            <TextBlock Text="{loc:Tr Pbr.Prefix}" Style="{StaticResource PboSpy.Label}"/>
+            <TextBox x:Name="PrefixBox" Style="{StaticResource PboSpy.TextBox}" Width="110" Margin="0 0 12 0"/>
+            <TextBlock Text="{loc:Tr Pbr.Naming}" Style="{StaticResource PboSpy.Label}"/>
+            <ComboBox x:Name="NamingBox" Width="215" Margin="0 0 18 0" SelectionChanged="OnNamingChanged"/>
+            <CheckBox x:Name="RecursiveCheck" Content="{loc:Tr Pbr.Recursive}"/>
+            <CheckBox x:Name="UseNamesCheck" Content="{loc:Tr Pbr.UseNames}" ToolTip="{loc:Tr Pbr.UseNamesTip}"/>
+            <CheckBox x:Name="FlipGreenCheck" Content="{loc:Tr Pbr.FlipGreen}" ToolTip="{loc:Tr Pbr.FlipGreenTip}"/>
+            <CheckBox x:Name="BaseColorCheck" Content="{loc:Tr Pbr.BaseColor}"/>
+            <CheckBox x:Name="OrmCheck" Content="{loc:Tr Pbr.Orm}" ToolTip="{loc:Tr Pbr.OrmTip}"/>
+        </WrapPanel>
+
+        <DockPanel Grid.Row="4" Margin="0 12 0 8">
+            <Button DockPanel.Dock="Right" x:Name="ConvertButton" Content="{loc:Tr Pbr.Convert}" Style="{StaticResource PboSpy.AccentButton}"
+                    Margin="8 0 0 0" MinWidth="140" Click="OnConvert" IsEnabled="False"/>
+            <Button DockPanel.Dock="Right" x:Name="ScanButton" Content="{loc:Tr Pbr.Scan}" Style="{StaticResource PboSpy.AccentButton}"
+                    MinWidth="140" Click="OnScan"/>
+            <Button DockPanel.Dock="Right" x:Name="CancelButton" Content="{loc:Tr Common.Cancel}" Style="{StaticResource PboSpy.Button}"
+                    Margin="0 0 8 0" Visibility="Collapsed" Click="OnCancel"/>
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock x:Name="SummaryText" Foreground="{DynamicResource PboSpy.TextDim}" TextTrimming="CharacterEllipsis"/>
+                <ProgressBar x:Name="Progress" Margin="0 4 12 0" Visibility="Hidden" Maximum="1"/>
+            </StackPanel>
+        </DockPanel>
+
+        <Grid Grid.Row="5">
+            <ListBox x:Name="GroupsList" Style="{StaticResource PboSpy.ListBox}" Background="{DynamicResource PboSpy.Surface}"
+                     BorderThickness="0" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.ScrollUnit="Pixel"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="ListBoxItem">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListBoxItem">
+                                    <ContentPresenter Margin="0 0 0 8"/>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </ListBox.ItemContainerStyle>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Border Style="{StaticResource PboSpy.Card}" Padding="10">
+                            <DockPanel>
+                                <StackPanel DockPanel.Dock="Left" Width="190" Margin="0 0 12 0">
+                                    <CheckBox IsChecked="{Binding Include}" Foreground="{DynamicResource PboSpy.Text}" Margin="0 0 0 6">
+                                        <TextBlock Text="{loc:Tr Pbr.IncludeGroup}"/>
+                                    </CheckBox>
+                                    <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource PboSpy.TextBox}" FontWeight="SemiBold"/>
+                                    <Border HorizontalAlignment="Left" Margin="0 8 0 0" CornerRadius="3" Padding="6 2"
+                                            Background="{Binding BadgeBrush}">
+                                        <TextBlock Text="{Binding Badge}" Foreground="White" FontSize="11" FontWeight="SemiBold"/>
+                                    </Border>
+                                    <TextBlock Text="{Binding Detail}" FontSize="11" Margin="0 6 0 0" TextWrapping="Wrap"
+                                               Foreground="{DynamicResource PboSpy.TextDim}"/>
+                                </StackPanel>
+                                <ItemsControl ItemsSource="{Binding Slots}" ItemTemplate="{StaticResource SlotTemplate}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                </ItemsControl>
+                            </DockPanel>
+                        </Border>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <StackPanel x:Name="EmptyHint" VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="560">
+                <TextBlock Text="{loc:Tr Pbr.EmptyTitle}" Style="{StaticResource PboSpy.Section}" HorizontalAlignment="Center"/>
+                <TextBlock Text="{loc:Tr Pbr.EmptyHint}" Style="{StaticResource PboSpy.Subtitle}" TextAlignment="Center"/>
+            </StackPanel>
+        </Grid>
+
+        <TextBlock Grid.Row="6" x:Name="StatusText" Margin="0 8 0 0" Foreground="{DynamicResource PboSpy.TextDim}" TextTrimming="CharacterEllipsis"/>
+    </Grid>
+</w:ToolWindow>
