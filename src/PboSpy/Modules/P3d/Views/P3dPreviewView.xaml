@@ -34,6 +34,8 @@
                 </StackPanel>
                 <ToggleButton x:Name="DenseToggle" Style="{StaticResource PboSpy.Button}" Content="{loc:Tr P3dView.Dense}" Click="OnDense"
                               ToolTip="{loc:Tr P3dView.DenseTip}" Visibility="Collapsed" Margin="0 0 14 0"/>
+                <Button x:Name="ViewButton" Content="{loc:Tr P3dView.View}" ContentStringFormat="{}{0} ▾" Style="{StaticResource PboSpy.Button}" Click="OnViewMenu"
+                        ToolTip="{loc:Tr P3dView.ViewTip}" Margin="0 0 6 0"/>
                 <Button Content="{loc:Tr P3dView.ResetView}" Style="{StaticResource PboSpy.Button}" Click="OnResetView" Margin="0 0 6 0"/>
                 <Button Content="{loc:Tr P3dView.TextureFolder}" Style="{StaticResource PboSpy.Button}" Click="OnPickFolder"
                         ToolTip="{loc:Tr P3dView.TextureFolderTip}"/>
@@ -71,7 +73,7 @@
                         </ModelVisual3D>
                     </Viewport3D>
                     <Image x:Name="WireImage" Stretch="None" HorizontalAlignment="Left" VerticalAlignment="Top" IsHitTestVisible="False"
-                           Visibility="Collapsed" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                           Visibility="Collapsed" RenderOptions.BitmapScalingMode="Linear"/>
                     <TextBlock x:Name="Overlay" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14"
                                Foreground="{DynamicResource PboSpy.TextDim}" TextWrapping="Wrap" TextAlignment="Center" Margin="20"/>
                     <TextBlock Text="{loc:Tr P3dView.Hint}" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10 0 10 8"

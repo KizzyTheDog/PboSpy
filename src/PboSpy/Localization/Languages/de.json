@@ -437,7 +437,7 @@
   "P3dView.TextureFolder": "Texturordner…",
   "P3dView.TextureFolderTip": "Ordner mit entpackten Spieldaten (zum Beispiel Ihr Laufwerk P:). Texturen werden außerdem in allen geöffneten PBOs und in den Ordnern rund um das Modell gesucht.",
   "P3dView.Textures": "Texturen",
-  "P3dView.Hint": "Linke Maustaste ziehen: drehen · Rechte Maustaste oder Umschalt: verschieben · Mausrad: zoomen · Doppelklick: zurücksetzen · Shift+`: laufen",
+  "P3dView.Hint": "Linke Maustaste ziehen: drehen · Rechte Maustaste ziehen: umsehen · Mittlere Maustaste oder Umschalt: verschieben · Mausrad: zoomen · Doppelklick: zurücksetzen · Umschalt+`: laufen",
   "P3dView.Loading": "Modell wird aufgebaut…",
   "P3dView.NoGeometry": "Dieser LOD hat keine Flächen zum Anzeigen.",
   "P3dView.Error": "Das Modell konnte nicht aufgebaut werden: {0}",
@@ -675,5 +675,17 @@
   "Rtm.TexturesTip": "Das Rig mit seinen Spieltexturen zeigen (aus deiner Arma-3-Installation).",
   "Rtm.Pause": "Pause",
   "Rtm.Loop": "Schleife",
-  "Rtm.LoopTip": "Animation endlos wiederholen; aus hält beim letzten Frame an."
+  "Rtm.LoopTip": "Animation endlos wiederholen; aus hält beim letzten Frame an.",
+  "P3dView.View": "Ansicht",
+  "P3dView.ViewTip": "Das Modell von vorn, hinten, den Seiten, oben oder unten ansehen",
+  "P3dView.ViewFront": "Vorne",
+  "P3dView.ViewBack": "Hinten",
+  "P3dView.ViewLeft": "Links",
+  "P3dView.ViewRight": "Rechts",
+  "P3dView.ViewTop": "Oben",
+  "P3dView.ViewBottom": "Unten",
+  "P3dView.ViewCorner": "Ecke",
+  "P3D.Main.Compact": "Kleinere Datei",
+  "P3D.Main.CompactTip": "Benannte Auswahlen ohne Inhalt weglassen (etwa 15 % kleiner, nichts geht verloren).",
+  "P3D.Core.LogDroppedEmpty": "{0} leere Auswahlen entfernt: {1} MB → {2} MB."
 }

@@ -2,6 +2,17 @@
 
 Newest first. Each commit adds an entry: what changed, why, and what was checked.
 
+## 2026-10-01 · unreleased · config decals, smoother wireframe, view menu, smaller MLODs
+
+- **Decals and slots follow the vehicle config**: PboSpy finds the CfgVehicles class using the model (in the opened PBOs), takes its hiddenSelections and the default paint scheme (textureList or the first TextureSources), and builds the mesh with those textures per section; blank slots are left out like in game. The Chinook's white-backed art decal and blank number/decal slots are gone, the rest stays (597,924 of 604,440 triangles shown). Explorer export uses the same.
+- **Wireframe while moving**: drawn at half resolution during camera moves (9–10 ms instead of 46–60 ms on the Chinook at 2560 px), sharp again when it stops; hot loops are compiled optimised from the start.
+- **Right drag looks around** from the camera; middle drag or Shift pans; left drag still orbits. New **View ▾** menu: front, back, left, right, top, bottom, corner.
+- **Smaller debinarised models**: P3D Tools leaves out named selections that select nothing ("Smaller file", on): CCA 473 → 403 MB. A rewrite that drops nothing is byte-identical, so nothing else changes.
+- **Faster model building**: meshes are built in plain lists instead of WPF collections.
+- **texHeaders.bin**: scrambled names show readable parts with '?' for random bytes, with a note at the top.
+- Texture list shows decoded names. Builder says .NET 8; build.bat starts the builder with no console window.
+- Test mode: main window at 2560×1392, `view`, `orbit` and `openlargest` commands, timing log.
+
 ## 2026-10-01 · unreleased · play/pause, loop, faster big models
 
 - **Animation preview**: the Play button reads Pause while playing and carries on from where it was; new **Loop** toggle (on by default, remembered); without loop it stops on the last frame.

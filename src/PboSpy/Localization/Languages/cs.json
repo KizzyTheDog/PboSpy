@@ -437,7 +437,7 @@
   "P3dView.TextureFolder": "Složka textur…",
   "P3dView.TextureFolderTip": "Složka s rozbalenými herními daty (například váš disk P:). Textury se hledají také ve všech otevřených PBO a ve složkách kolem modelu.",
   "P3dView.Textures": "Textury",
-  "P3dView.Hint": "Tažení levým: otáčení · Tažení pravým nebo Shift: posun · Kolečko: zoom · Dvojklik: obnovit · Shift+`: chůze",
+  "P3dView.Hint": "Levé tažení: otáčet · Pravé tažení: rozhlížet se · Prostřední tažení nebo Shift: posun · Kolečko: zoom · Dvojklik: reset · Shift+`: chůze",
   "P3dView.Loading": "Sestavování modelu…",
   "P3dView.NoGeometry": "Tento LOD nemá žádné plochy k zobrazení.",
   "P3dView.Error": "Model se nepodařilo sestavit: {0}",
@@ -675,5 +675,17 @@
   "Rtm.TexturesTip": "Zobrazit rig s herními texturami (z instalace Arma 3).",
   "Rtm.Pause": "Pauza",
   "Rtm.Loop": "Smyčka",
-  "Rtm.LoopTip": "Přehrávat animaci dokola; vypnuto zastaví na posledním snímku."
+  "Rtm.LoopTip": "Přehrávat animaci dokola; vypnuto zastaví na posledním snímku.",
+  "P3dView.View": "Pohled",
+  "P3dView.ViewTip": "Prohlédnout model zepředu, zezadu, z boků, shora nebo zdola",
+  "P3dView.ViewFront": "Zepředu",
+  "P3dView.ViewBack": "Zezadu",
+  "P3dView.ViewLeft": "Zleva",
+  "P3dView.ViewRight": "Zprava",
+  "P3dView.ViewTop": "Shora",
+  "P3dView.ViewBottom": "Zdola",
+  "P3dView.ViewCorner": "Roh",
+  "P3D.Main.Compact": "Menší soubor",
+  "P3D.Main.CompactTip": "Vynechat prázdné pojmenované výběry (asi o 15 % menší, nic se neztratí).",
+  "P3D.Core.LogDroppedEmpty": "Odstraněno {0} prázdných výběrů: {1} MB → {2} MB."
 }

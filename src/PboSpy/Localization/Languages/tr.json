@@ -437,7 +437,7 @@
   "P3dView.TextureFolder": "Doku klasörü…",
   "P3dView.TextureFolderTip": "Paketten çıkarılmış oyun verilerinin bulunduğu klasör (örneğin P: sürücünüz). Dokular ayrıca açık olan tüm PBO'larda ve modelin çevresindeki klasörlerde aranır.",
   "P3dView.Textures": "Dokular",
-  "P3dView.Hint": "Sol sürükle: döndür · Sağ sürükle veya Shift: kaydır · Tekerlek: yakınlaştır · Çift tıklama: sıfırla · Shift+`: yürü",
+  "P3dView.Hint": "Sol sürükle: döndür · Sağ sürükle: etrafa bak · Orta sürükle veya Shift: kaydır · Tekerlek: yakınlaştır · Çift tık: sıfırla · Shift+`: yürü",
   "P3dView.Loading": "Model oluşturuluyor…",
   "P3dView.NoGeometry": "Bu LOD'da gösterilecek yüz yok.",
   "P3dView.Error": "Model oluşturulamadı: {0}",
@@ -675,5 +675,17 @@
   "Rtm.TexturesTip": "Rig'i oyun dokularıyla göster (Arma 3 kurulumundan okunur).",
   "Rtm.Pause": "Duraklat",
   "Rtm.Loop": "Döngü",
-  "Rtm.LoopTip": "Animasyonu sürekli oynat; kapalıyken son karede durur."
+  "Rtm.LoopTip": "Animasyonu sürekli oynat; kapalıyken son karede durur.",
+  "P3dView.View": "Görünüm",
+  "P3dView.ViewTip": "Modele önden, arkadan, yanlardan, üstten veya alttan bak",
+  "P3dView.ViewFront": "Ön",
+  "P3dView.ViewBack": "Arka",
+  "P3dView.ViewLeft": "Sol",
+  "P3dView.ViewRight": "Sağ",
+  "P3dView.ViewTop": "Üst",
+  "P3dView.ViewBottom": "Alt",
+  "P3dView.ViewCorner": "Köşe",
+  "P3D.Main.Compact": "Daha küçük dosya",
+  "P3D.Main.CompactTip": "Boş adlandırılmış seçimleri atla (yaklaşık %15 daha küçük, hiçbir şey kaybolmaz).",
+  "P3D.Core.LogDroppedEmpty": "{0} boş seçim kaldırıldı: {1} MB → {2} MB."
 }

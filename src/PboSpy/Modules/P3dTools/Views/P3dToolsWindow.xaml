@@ -64,6 +64,8 @@
             <DockPanel Margin="0 8 0 0">
                 <CheckBox DockPanel.Dock="Right" x:Name="MirrorCheck" Content="{loc:Tr P3D.Main.Mirror}"
                           Foreground="{DynamicResource PboSpy.Text}" VerticalAlignment="Center"/>
+                <CheckBox DockPanel.Dock="Right" x:Name="CompactCheck" Content="{loc:Tr P3D.Main.Compact}" ToolTip="{loc:Tr P3D.Main.CompactTip}"
+                          Foreground="{DynamicResource PboSpy.Text}" VerticalAlignment="Center" Margin="0 0 16 0"/>
                 <CheckBox DockPanel.Dock="Right" x:Name="StripCheck" Content="{loc:Tr P3D.Main.StripProxies}" ToolTip="{loc:Tr P3D.Main.StripProxiesTip}"
                           Foreground="{DynamicResource PboSpy.Text}" VerticalAlignment="Center" Margin="0 0 16 0"/>
                 <TextBlock x:Name="FormatText" Foreground="{DynamicResource PboSpy.TextDim}" VerticalAlignment="Center"

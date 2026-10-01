@@ -437,7 +437,7 @@
   "P3dView.TextureFolder": "Folder tekstur…",
   "P3dView.TextureFolderTip": "Folder z rozpakowanymi danymi gry (na przykład dysk P:). Tekstury są też wyszukiwane w każdym otwartym PBO i w folderach wokół modelu.",
   "P3dView.Textures": "Tekstury",
-  "P3dView.Hint": "Przeciąganie lewym: obrót · Przeciąganie prawym lub Shift: przesunięcie · Kółko: powiększenie · Dwuklik: reset · Shift+`: chodzenie",
+  "P3dView.Hint": "Lewy przeciąg: obrót · Prawy przeciąg: rozglądanie · Środkowy przeciąg lub Shift: przesuń · Kółko: zoom · Dwuklik: reset · Shift+`: chodzenie",
   "P3dView.Loading": "Budowanie modelu…",
   "P3dView.NoGeometry": "Ten LOD nie ma ścian do wyświetlenia.",
   "P3dView.Error": "Nie udało się zbudować modelu: {0}",
@@ -675,5 +675,17 @@
   "Rtm.TexturesTip": "Pokaż rig z teksturami z gry (z instalacji Arma 3).",
   "Rtm.Pause": "Pauza",
   "Rtm.Loop": "Pętla",
-  "Rtm.LoopTip": "Odtwarzaj animację w kółko; wyłączone zatrzymuje na ostatniej klatce."
+  "Rtm.LoopTip": "Odtwarzaj animację w kółko; wyłączone zatrzymuje na ostatniej klatce.",
+  "P3dView.View": "Widok",
+  "P3dView.ViewTip": "Patrz na model z przodu, z tyłu, z boków, z góry lub z dołu",
+  "P3dView.ViewFront": "Przód",
+  "P3dView.ViewBack": "Tył",
+  "P3dView.ViewLeft": "Lewo",
+  "P3dView.ViewRight": "Prawo",
+  "P3dView.ViewTop": "Góra",
+  "P3dView.ViewBottom": "Dół",
+  "P3dView.ViewCorner": "Narożnik",
+  "P3D.Main.Compact": "Mniejszy plik",
+  "P3D.Main.CompactTip": "Pomiń puste nazwane selekcje (ok. 15% mniej, nic nie ginie).",
+  "P3D.Core.LogDroppedEmpty": "Usunięto {0} pustych selekcji: {1} MB → {2} MB."
 }

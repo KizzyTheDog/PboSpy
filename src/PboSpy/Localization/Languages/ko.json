@@ -437,7 +437,7 @@
   "P3dView.TextureFolder": "텍스처 폴더…",
   "P3dView.TextureFolderTip": "압축을 푼 게임 데이터가 있는 폴더입니다 (예: P: 드라이브). 텍스처는 열려 있는 모든 PBO와 모델 주변 폴더에서도 찾습니다.",
   "P3dView.Textures": "텍스처",
-  "P3dView.Hint": "왼쪽 드래그: 회전 · 오른쪽 드래그 또는 Shift: 이동 · 휠: 확대/축소 · 두 번 클릭: 초기화 · Shift+`: 걷기",
+  "P3dView.Hint": "왼쪽 드래그: 회전 · 오른쪽 드래그: 둘러보기 · 가운데 드래그 또는 Shift: 이동 · 휠: 확대/축소 · 더블 클릭: 초기화 · Shift+`: 걷기",
   "P3dView.Loading": "모델을 만드는 중…",
   "P3dView.NoGeometry": "이 LOD에는 표시할 면이 없습니다.",
   "P3dView.Error": "모델을 만들 수 없습니다: {0}",
@@ -675,5 +675,17 @@
   "Rtm.TexturesTip": "리그를 게임 텍스처로 표시합니다(설치된 Arma 3에서 읽음).",
   "Rtm.Pause": "일시 정지",
   "Rtm.Loop": "반복",
-  "Rtm.LoopTip": "애니메이션을 계속 반복합니다. 끄면 마지막 프레임에서 멈춥니다."
+  "Rtm.LoopTip": "애니메이션을 계속 반복합니다. 끄면 마지막 프레임에서 멈춥니다.",
+  "P3dView.View": "보기",
+  "P3dView.ViewTip": "모델을 앞, 뒤, 옆, 위, 아래에서 봅니다",
+  "P3dView.ViewFront": "앞",
+  "P3dView.ViewBack": "뒤",
+  "P3dView.ViewLeft": "왼쪽",
+  "P3dView.ViewRight": "오른쪽",
+  "P3dView.ViewTop": "위",
+  "P3dView.ViewBottom": "아래",
+  "P3dView.ViewCorner": "모서리",
+  "P3D.Main.Compact": "파일 줄이기",
+  "P3D.Main.CompactTip": "아무것도 선택하지 않은 이름 있는 선택을 뺍니다(약 15% 작아지며 잃는 것 없음).",
+  "P3D.Core.LogDroppedEmpty": "빈 선택 {0}개 제거: {1} MB → {2} MB."
 }

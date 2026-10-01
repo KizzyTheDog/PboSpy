@@ -45,6 +45,7 @@ public partial class P3dPreviewView : UserControl
         {
             (AppSettings.Default.PreviewShading switch { "wire" => ShadeWire, "solid" => ShadeSolid, "material" => ShadeMaterial, _ => ShadeRendered }).IsChecked = true;
             StartStats();
+            Last = this;
             if (_shading == "wire")
             {
                 ApplyShading();
@@ -141,12 +142,23 @@ public partial class P3dPreviewView : UserControl
         CompositionTarget.Rendering += OnWireFrame;
     }
 
+    private DateTime _lastWireMove;
+    private bool _wireSharp = true;
+
+    // While the camera moves the lines are drawn at half resolution (about 4x less work), then sharp again once it stops.
     private void OnWireFrame(object sender, EventArgs e)
     {
+        var moving = (DateTime.UtcNow - _lastWireMove).TotalMilliseconds < 150;
         if (_wireDirty)
         {
             _wireDirty = false;
-            DrawWire();
+            DrawWire(moving ? 2 : 1);
+            _wireSharp = !moving;
+        }
+        else if (!_wireSharp && !moving)
+        {
+            DrawWire(1);
+            _wireSharp = true;
         }
     }
 
@@ -199,26 +211,41 @@ public partial class P3dPreviewView : UserControl
         return new WirePart { Points = pts, Edges = edges.ToArray(), ScreenX = new float[n], ScreenY = new float[n] };
     }
 
-    private void DrawWire()
+    private int _wireDraws;
+    private readonly System.Diagnostics.Stopwatch _wireClock = new();
+
+    private readonly WriteableBitmap[] _wireBitmaps = new WriteableBitmap[3];
+
+    private void DrawWire(int step = 1)
     {
+        _wireClock.Restart();
         var dpi = VisualTreeHelper.GetDpi(ViewHost);
-        int w = (int)(ViewHost.ActualWidth * dpi.DpiScaleX), h = (int)(ViewHost.ActualHeight * dpi.DpiScaleY);
+        int w = (int)(ViewHost.ActualWidth * dpi.DpiScaleX / step), h = (int)(ViewHost.ActualHeight * dpi.DpiScaleY / step);
         if (w < 1 || h < 1)
         {
             return;
         }
-        if (_wireBitmap == null || _wireBitmap.PixelWidth != w || _wireBitmap.PixelHeight != h)
+        // One bitmap per resolution; its DPI makes either fill the same area.
+        var bitmap = _wireBitmaps[step];
+        if (bitmap == null || bitmap.PixelWidth != w || bitmap.PixelHeight != h)
         {
-            _wireBitmap = new WriteableBitmap(w, h, 96 * dpi.DpiScaleX, 96 * dpi.DpiScaleY, PixelFormats.Pbgra32, null);
-            WireImage.Source = _wireBitmap;
+            bitmap = _wireBitmaps[step] = new WriteableBitmap(w, h, 96 * dpi.DpiScaleX / step, 96 * dpi.DpiScaleY / step, PixelFormats.Pbgra32, null);
+        }
+        _wireBitmap = bitmap;
+        if (WireImage.Source != bitmap)
+        {
+            WireImage.Source = bitmap;
+        }
+        if (_wireCount == null || _wireCount.Length < w * h)
+        {
             _wireCount = new int[w * h];
             _wireHeat = new byte[w * h];
             _wirePixels = new uint[w * h];
         }
         else
         {
-            Array.Clear(_wireCount);
-            Array.Clear(_wireHeat);
+            Array.Clear(_wireCount, 0, w * h);
+            Array.Clear(_wireHeat, 0, w * h);
         }
 
         var look = Camera.LookDirection;
@@ -299,6 +326,10 @@ public partial class P3dPreviewView : UserControl
             }
         });
         _wireBitmap.WritePixels(new Int32Rect(0, 0, w, h), pixels, w * 4, 0);
+        if (++_wireDraws < 12)
+        {
+            PboSpy.Services.TestMode.Log($"wire draw {w}x{h} (step {step}): {_wireClock.ElapsedMilliseconds} ms");
+        }
     }
 
     // How opaque a pixel is when this many lines cross it.
@@ -491,9 +522,12 @@ public partial class P3dPreviewView : UserControl
             var companions = _vm.Companions.ToList();
             var title = _vm.MainName;
             var clock = System.Diagnostics.Stopwatch.StartNew();
+            var model = _vm.Model;
+            var tree = IoC.Get<PboSpy.Modules.FileManager.IFileManager>().FileTree.ToList();
             mesh = await Task.Run(() =>
             {
-                var main = ModelMeshBuilder.Build(lod.Lod);
+                // The vehicle config decides what its hidden selections (camo, decals, numbers) show by default.
+                var main = ModelMeshBuilder.Build(lod.Lod, ConfigTextures.Cached(model, tree, lod.Lod));
                 PboSpy.Services.TestMode.Log($"p3d mesh build: {clock.ElapsedMilliseconds} ms");
                 if (companions.Count == 0)
                 {
@@ -1112,6 +1146,25 @@ public partial class P3dPreviewView : UserControl
 
     private void OnResetView(object sender, RoutedEventArgs e) => Fit();
 
+    // Front, back, sides, top and bottom; the model faces -Z here (Arma's +Z, mirrored).
+    private void OnViewMenu(object sender, RoutedEventArgs e)
+    {
+        var menu = new ContextMenu { PlacementTarget = ViewButton, Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom };
+        foreach (var (key, yaw, pitch) in new[] { ("P3dView.ViewFront", 180.0, 0.0), ("P3dView.ViewBack", 0.0, 0.0), ("P3dView.ViewLeft", 270.0, 0.0),
+                     ("P3dView.ViewRight", 90.0, 0.0), ("P3dView.ViewTop", 180.0, 90.0), ("P3dView.ViewBottom", 180.0, -90.0), ("P3dView.ViewCorner", 325.0, 18.0) })
+        {
+            var item = new MenuItem { Header = Loc.T(key) };
+            item.Click += (_, _) =>
+            {
+                _yaw = yaw;
+                _pitch = pitch;
+                UpdateCamera();
+            };
+            menu.Items.Add(item);
+        }
+        menu.IsOpen = true;
+    }
+
     // What's on screen (this LOD, proxies left out) as OBJ + MTL, with full size PNG textures next to it.
     private void OnExportObj(object sender, RoutedEventArgs e)
     {
@@ -1145,10 +1198,28 @@ public partial class P3dPreviewView : UserControl
         UpdateCamera();
     }
 
+    /// <summary>The last loaded preview, for test-mode commands.</summary>
+    internal static P3dPreviewView Last { get; private set; }
+
+    internal void TestView(double yaw, double pitch, double zoom)
+    {
+        _yaw = yaw;
+        _pitch = pitch;
+        _distance = _radius * zoom;
+        UpdateCamera();
+    }
+
+    internal void TestOrbit(double degrees)
+    {
+        _yaw += degrees;
+        UpdateCamera();
+    }
+
     private void UpdateCamera()
     {
         Moving();
         _wireDirty = true;
+        _lastWireMove = DateTime.UtcNow;
         var yaw = _yaw * Math.PI / 180;
         var pitch = _pitch * Math.PI / 180;
         var direction = new Vector3D(Math.Cos(pitch) * Math.Sin(yaw), Math.Sin(pitch), Math.Cos(pitch) * Math.Cos(yaw));
@@ -1322,6 +1393,12 @@ public partial class P3dPreviewView : UserControl
         _last = position;
         WrapCursor(position);
 
+        // Left: orbit the model. Right: look around from where the camera is. Middle or Shift: pan.
+        if (_drag == MouseButton.Right && !Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
+        {
+            WalkLook(delta * 2.5);
+            return;
+        }
         var pan = _drag != MouseButton.Left || Keyboard.Modifiers.HasFlag(ModifierKeys.Shift);
         if (!pan)
         {

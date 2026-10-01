@@ -21,7 +21,7 @@ internal class ModelTextureItem : PropertyChangedBase
         Path = path;
         Triangles = triangles;
         DisplayName = string.IsNullOrWhiteSpace(path) ? Loc.T("P3dView.NoTexture")
-            : TextureResolver.IsProcedural(path) ? path : System.IO.Path.GetFileName(path);
+            : TextureResolver.IsProcedural(path) ? path : System.IO.Path.GetFileName(PboSpy.Modules.Deobfuscate.Core.NameRecovery.FixEncoding(path));
     }
 
     public string Path { get; }

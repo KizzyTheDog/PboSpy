@@ -272,7 +272,7 @@ $confBox.DropDownStyle = 'DropDownList'; [void]$confBox.Items.AddRange(@('Releas
 $confBox.SelectedItem = $cfg.Configuration; if ($confBox.SelectedIndex -lt 0) { $confBox.SelectedIndex = 0 }
 $confBox.BackColor = $panel; $confBox.ForeColor = $fg; $confBox.FlatStyle = 'Flat'
 
-$selfBox = New-Check 'Self-contained (runs without the .NET 6 Desktop Runtime, ~150 MB)' 18 172 $cfg.SelfContained
+$selfBox = New-Check 'Self-contained (runs without the .NET 8 Desktop Runtime, ~150 MB)' 18 172 $cfg.SelfContained
 $singleBox = New-Check 'Single .exe file' 18 196 $cfg.SingleFile 'Packs everything into PboSpy.exe. Best combined with self-contained.'
 $cleanBox = New-Check 'Clean build (wipe the output folder first)' 18 220 $cfg.Clean
 

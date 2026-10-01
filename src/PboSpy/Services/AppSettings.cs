@@ -76,6 +76,7 @@ public sealed class AppSettings : INotifyPropertyChanged
     private string rtmRig = "";
     private bool rtmTextures = true;
     private bool rtmLoop = true;
+    private bool p3dDropEmptySelections = true;
     private string steamCmdPath = "";
     private string steamUser = "";
     private List<string> uncheckedExtensions = new();
@@ -136,6 +137,7 @@ public sealed class AppSettings : INotifyPropertyChanged
     public string SteamCmdPath { get => steamCmdPath; set => Set(ref steamCmdPath, value ?? ""); }
     /// <summary>Only the account name; steamcmd keeps its own login, PboSpy never handles the password.</summary>
     public string SteamUser { get => steamUser; set => Set(ref steamUser, value ?? ""); }
+    public bool P3dDropEmptySelections { get => p3dDropEmptySelections; set => Set(ref p3dDropEmptySelections, value); }
     public bool RtmLoop { get => rtmLoop; set => Set(ref rtmLoop, value); }
     public bool RtmTextures { get => rtmTextures; set => Set(ref rtmTextures, value); }
     public string RtmRig { get => rtmRig; set => Set(ref rtmRig, value ?? ""); }

@@ -25,6 +25,7 @@ internal static class TexHeaders
         var text = new StringBuilder();
         text.AppendLine($"// texHeaders.bin, version {version}, {count} textures");
         text.AppendLine("// size, format, mipmaps, alpha (A = has alpha, T = see-through), average colour (RGBA), .paa size, path");
+        text.AppendLine("// '?' marks characters an obfuscator scrambled on purpose; the original names can't be recovered from this file.");
         text.AppendLine();
         for (var i = 0; i < count; i++)
         {
@@ -69,6 +70,29 @@ internal static class TexHeaders
         {
             bytes.Add(b);
         }
-        return PboSpy.Modules.Deobfuscate.Core.NameRecovery.FixEncoding(Encoding.Latin1.GetString(bytes.ToArray()));
+        var name = PboSpy.Modules.Deobfuscate.Core.NameRecovery.FixEncoding(Encoding.Latin1.GetString(bytes.ToArray()));
+        if (!name.Any(char.IsControl))
+        {
+            return name;
+        }
+        // Obfuscators fill names with random bytes: decode what is valid UTF-8 and show the rest as '?'.
+        var text = Encoding.UTF8.GetString(bytes.ToArray());
+        var clean = new StringBuilder(text.Length);
+        for (var i = 0; i < text.Length; i++)
+        {
+            var c = text[i];
+            var category = char.GetUnicodeCategory(text, i);
+            var unreadable = char.IsControl(c) || c == '�' || category is System.Globalization.UnicodeCategory.OtherNotAssigned
+                or System.Globalization.UnicodeCategory.PrivateUse or System.Globalization.UnicodeCategory.Surrogate;
+            if (char.IsHighSurrogate(c) && i + 1 < text.Length)
+            {
+                unreadable |= char.GetUnicodeCategory(text, i) is System.Globalization.UnicodeCategory.OtherNotAssigned or System.Globalization.UnicodeCategory.PrivateUse;
+                clean.Append(unreadable ? "?" : text.Substring(i, 2));
+                i++;
+                continue;
+            }
+            clean.Append(unreadable ? '?' : c);
+        }
+        return clean.ToString();
     }
 }

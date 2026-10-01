@@ -36,6 +36,7 @@ public partial class P3dToolsWindow : ToolWindow
 
         BisDllBanner.Visibility = Converter.IsAvailable ? Visibility.Collapsed : Visibility.Visible;
         MirrorCheck.IsChecked = _settings.P3dMirrorFolders;
+        CompactCheck.IsChecked = _settings.P3dDropEmptySelections;
 
         if (!string.IsNullOrWhiteSpace(_settings.P3dOutput))
         {
@@ -96,6 +97,7 @@ public partial class P3dToolsWindow : ToolWindow
         _settings.P3dInput = InputBox.Text.Trim();
         _settings.P3dOutput = OutputBox.Text.Trim();
         _settings.P3dMirrorFolders = MirrorCheck.IsChecked == true;
+        _settings.P3dDropEmptySelections = CompactCheck.IsChecked == true;
         _settings.Save();
     }
 

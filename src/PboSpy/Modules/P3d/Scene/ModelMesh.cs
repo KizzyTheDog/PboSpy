@@ -88,7 +88,7 @@ internal static class ModelMeshBuilder
 
     public static ModelMesh Build(ILevelOfDetail lod) => Built.GetValue(lod, l => l switch
     {
-        OdolLod odol => BuildOdol(odol),
+        OdolLod odol => BuildOdol(odol, null),
         MlodLod mlod => BuildMlod(mlod),
         _ => new ModelMesh()
     });
@@ -96,11 +96,13 @@ internal static class ModelMeshBuilder
     // Boats cut the water surface with these; the game never shows them.
     private static bool IsWaterMask(string texture) => texture.Contains("antiwater", StringComparison.OrdinalIgnoreCase);
 
+    // Plain lists while building: WPF's own collections check the thread on every read and write,
+    // which made big models (600k triangles) take over a second just to fill them.
     private sealed class PartBuilder
     {
-        public readonly Point3DCollection Positions = new();
-        public readonly PointCollection Uvs = new();
-        public readonly Int32Collection Indices = new();
+        public readonly List<Point3D> Positions = new();
+        public readonly List<Point> Uvs = new();
+        public readonly List<int> Indices = new();
         public readonly Dictionary<(int, float, float), int> Map = new();
         public string Texture = "";
         public string Material = "";
@@ -127,33 +129,30 @@ internal static class ModelMeshBuilder
         public ModelPart Finish(ref Rect3D bounds)
         {
             // WPF would otherwise work the normals out on the UI thread the first time it draws.
-            var sums = new Vector3D[Positions.Count];
-            for (var i = 0; i + 2 < Indices.Count; i += 3)
+            var points = System.Runtime.InteropServices.CollectionsMarshal.AsSpan(Positions);
+            var indices = System.Runtime.InteropServices.CollectionsMarshal.AsSpan(Indices);
+            var sums = new Vector3D[points.Length];
+            for (var i = 0; i + 2 < indices.Length; i += 3)
             {
-                var a = Indices[i];
-                var b = Indices[i + 1];
-                var c = Indices[i + 2];
-                var n = Vector3D.CrossProduct(Positions[b] - Positions[a], Positions[c] - Positions[a]);
+                int a = indices[i], b = indices[i + 1], c = indices[i + 2];
+                var n = Vector3D.CrossProduct(points[b] - points[a], points[c] - points[a]);
                 sums[a] += n;
                 sums[b] += n;
                 sums[c] += n;
             }
-            var normals = new Vector3DCollection(sums.Length);
-            foreach (var n in sums)
+            for (var i = 0; i < sums.Length; i++)
             {
-                var copy = n;
-                if (copy.LengthSquared > 0)
+                if (sums[i].LengthSquared > 0)
                 {
-                    copy.Normalize();
+                    sums[i].Normalize();
                 }
-                normals.Add(copy);
             }
             var mesh = new MeshGeometry3D
             {
-                Positions = Positions,
-                Normals = normals,
-                TextureCoordinates = Uvs,
-                TriangleIndices = Indices
+                Positions = new Point3DCollection(Positions),
+                Normals = new Vector3DCollection(sums),
+                TextureCoordinates = new PointCollection(Uvs),
+                TriangleIndices = new Int32Collection(Indices)
             };
             mesh.Freeze();
             bounds = Rect3D.Union(bounds, mesh.Bounds);
@@ -161,7 +160,11 @@ internal static class ModelMeshBuilder
         }
     }
 
-    private static ModelMesh BuildOdol(OdolLod lod)
+    /// <summary>With per-section textures from the vehicle config (hidden selections); "" leaves the section out.</summary>
+    public static ModelMesh Build(ILevelOfDetail lod, IReadOnlyDictionary<int, string> sectionTextures) =>
+        sectionTextures == null || sectionTextures.Count == 0 || lod is not OdolLod odol ? Build(lod) : BuildOdol(odol, sectionTextures);
+
+    private static ModelMesh BuildOdol(OdolLod lod, IReadOnlyDictionary<int, string> sectionTextures)
     {
         var result = new ModelMesh();
         var faces = lod.Polygons?.Faces;
@@ -196,10 +199,19 @@ internal static class ModelMeshBuilder
         }
         else
         {
-            foreach (var section in lod.Sections)
+            for (var sectionIndex = 0; sectionIndex < lod.Sections.Length; sectionIndex++)
             {
+                var section = lod.Sections[sectionIndex];
                 var texture = section.TextureIndex >= 0 && lod.Textures != null && section.TextureIndex < lod.Textures.Length
                     ? lod.Textures[section.TextureIndex] ?? "" : "";
+                if (sectionTextures != null && sectionTextures.TryGetValue(sectionIndex, out var configured))
+                {
+                    if (string.IsNullOrWhiteSpace(configured))
+                    {
+                        continue;
+                    }
+                    texture = configured;
+                }
                 var material = section.MaterialIndex >= 0 && lod.Materials != null && section.MaterialIndex < lod.Materials.Length
                     ? lod.Materials[section.MaterialIndex]?.MaterialName ?? "" : section.Material ?? "";
                 // Binarising strips the proxy selections; what is left of the proxy triangles is the

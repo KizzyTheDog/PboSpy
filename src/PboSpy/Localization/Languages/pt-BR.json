@@ -437,7 +437,7 @@
   "P3dView.TextureFolder": "Pasta de texturas…",
   "P3dView.TextureFolderTip": "Pasta com os dados do jogo descompactados (por exemplo, sua unidade P:). As texturas também são procuradas em todos os PBOs abertos e nas pastas ao redor do modelo.",
   "P3dView.Textures": "Texturas",
-  "P3dView.Hint": "Arrastar com botão esquerdo: girar · Arrastar com botão direito ou Shift: mover · Roda: zoom · Clique duplo: redefinir · Shift+`: andar",
+  "P3dView.Hint": "Arrastar esq.: girar · Arrastar dir.: olhar em volta · Arrastar meio ou Shift: mover · Roda: zoom · Clique duplo: redefinir · Shift+`: andar",
   "P3dView.Loading": "Montando o modelo…",
   "P3dView.NoGeometry": "Este LOD não tem faces para mostrar.",
   "P3dView.Error": "Não foi possível montar o modelo: {0}",
@@ -675,5 +675,17 @@
   "Rtm.TexturesTip": "Mostrar o rig com as texturas do jogo (lidas da sua instalação do Arma 3).",
   "Rtm.Pause": "Pausar",
   "Rtm.Loop": "Repetir",
-  "Rtm.LoopTip": "Repete a animação sem parar; desligado, para no último quadro."
+  "Rtm.LoopTip": "Repete a animação sem parar; desligado, para no último quadro.",
+  "P3dView.View": "Vista",
+  "P3dView.ViewTip": "Ver o modelo de frente, de trás, dos lados, de cima ou de baixo",
+  "P3dView.ViewFront": "Frente",
+  "P3dView.ViewBack": "Trás",
+  "P3dView.ViewLeft": "Esquerda",
+  "P3dView.ViewRight": "Direita",
+  "P3dView.ViewTop": "Cima",
+  "P3dView.ViewBottom": "Baixo",
+  "P3dView.ViewCorner": "Canto",
+  "P3D.Main.Compact": "Arquivo menor",
+  "P3D.Main.CompactTip": "Deixar de fora seleções nomeadas vazias (cerca de 15% menor, nada se perde).",
+  "P3D.Core.LogDroppedEmpty": "{0} seleções vazias removidas: {1} MB → {2} MB."
 }

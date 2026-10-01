@@ -45,10 +45,11 @@ internal static class TestMode
         }
         window.StateChanged += (_, _) => Keep();
         window.LocationChanged += (_, _) => Keep();
-        if (double.IsNaN(window.Width) || window.Width < 400)
+        if (window == Application.Current?.MainWindow || double.IsNaN(window.Width) || window.Width < 400)
         {
-            window.Width = 1600;
-            window.Height = 900;
+            // Main window at a typical full-screen size so timings and layout match real use.
+            window.Width = window == Application.Current?.MainWindow ? 2560 : 1600;
+            window.Height = window == Application.Current?.MainWindow ? 1392 : 900;
         }
     }
 
@@ -101,6 +102,29 @@ internal static class TestMode
                     break;
                 case "window" when verb[1] == "find":
                     Modules.Windows.FindInScriptsWindow.Open();
+                    break;
+                case "openlargest":
+                    // "openlargest <pbo>": opens the PBO and previews its biggest model.
+                    await AppOpen.Show(new[] { verb[1] }, preview: false);
+                    var pbo = IoC.Get<Modules.FileManager.IFileManager>().FileTree.OfType<Modules.Pbo.Models.PboFile>()
+                        .FirstOrDefault(f => f.PBO.PBOFilePath.Equals(verb[1], StringComparison.OrdinalIgnoreCase));
+                    var largest = pbo?.AllEntries.Where(e => e.Extension == ".p3d").OrderByDescending(e => e.DataSize).FirstOrDefault();
+                    if (largest != null)
+                    {
+                        await IoC.Get<Modules.Preview.IPreviewManager>().ShowPreview(largest, pin: true, activate: true);
+                    }
+                    break;
+                case "view":
+                    var v = verb[1].Split(' ').Select(double.Parse).ToArray();
+                    Modules.P3d.Views.P3dPreviewView.Last?.TestView(v[0], v[1], v[2]);
+                    break;
+                case "orbit":
+                    // Turns the 3D view for a while, like dragging, to measure redraws while moving.
+                    for (var i = 0; i < int.Parse(verb[1]); i++)
+                    {
+                        Modules.P3d.Views.P3dPreviewView.Last?.TestOrbit(3);
+                        await Task.Delay(16);
+                    }
                     break;
                 case "window" when verb[1] == "presets":
                     Modules.Presets.PresetsWindow.Open();

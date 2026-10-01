@@ -437,7 +437,7 @@
   "P3dView.TextureFolder": "Texture folder…",
   "P3dView.TextureFolderTip": "Folder with unpacked game data (for example your P: drive). Textures are also looked up in every opened PBO and in the folders around the model.",
   "P3dView.Textures": "Textures",
-  "P3dView.Hint": "Left drag: rotate · Right drag or Shift: pan · Wheel: zoom · Double click: reset · Shift+`: walk",
+  "P3dView.Hint": "Left drag: rotate · Right drag: look around · Middle drag or Shift: pan · Wheel: zoom · Double click: reset · Shift+`: walk",
   "P3dView.Loading": "Building model…",
   "P3dView.NoGeometry": "This LOD has no faces to show.",
   "P3dView.Error": "Could not build the model: {0}",
@@ -675,5 +675,17 @@
   "Rtm.TexturesTip": "Show the rig with its game textures (read from your Arma 3 install).",
   "Rtm.Pause": "Pause",
   "Rtm.Loop": "Loop",
-  "Rtm.LoopTip": "Play the animation over and over; off stops on the last frame."
+  "Rtm.LoopTip": "Play the animation over and over; off stops on the last frame.",
+  "P3dView.View": "View",
+  "P3dView.ViewTip": "Look at the model from the front, back, sides, top or bottom",
+  "P3dView.ViewFront": "Front",
+  "P3dView.ViewBack": "Back",
+  "P3dView.ViewLeft": "Left",
+  "P3dView.ViewRight": "Right",
+  "P3dView.ViewTop": "Top",
+  "P3dView.ViewBottom": "Bottom",
+  "P3dView.ViewCorner": "Corner",
+  "P3D.Main.Compact": "Smaller file",
+  "P3D.Main.CompactTip": "Leave out named selections that select nothing (about 15% smaller, nothing is lost).",
+  "P3D.Core.LogDroppedEmpty": "Removed {0} empty selections: {1} MB → {2} MB."
 }

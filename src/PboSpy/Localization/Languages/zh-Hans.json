@@ -437,7 +437,7 @@
   "P3dView.TextureFolder": "纹理文件夹…",
   "P3dView.TextureFolderTip": "存放解包后游戏数据的文件夹（例如你的 P: 盘）。纹理也会在所有已打开的 PBO 以及模型周围的文件夹中查找。",
   "P3dView.Textures": "纹理",
-  "P3dView.Hint": "左键拖动：旋转 · 右键拖动或 Shift：平移 · 滚轮：缩放 · 双击：重置 · Shift+`: 漫游",
+  "P3dView.Hint": "左键拖动：旋转 · 右键拖动：环顾四周 · 中键拖动或 Shift：平移 · 滚轮：缩放 · 双击：重置 · Shift+`：漫游",
   "P3dView.Loading": "正在生成模型…",
   "P3dView.NoGeometry": "此 LOD 没有可显示的面。",
   "P3dView.Error": "无法生成模型：{0}",
@@ -675,5 +675,17 @@
   "Rtm.TexturesTip": "以游戏纹理显示骨架模型（从已安装的 Arma 3 读取）。",
   "Rtm.Pause": "暂停",
   "Rtm.Loop": "循环",
-  "Rtm.LoopTip": "循环播放动画；关闭后停在最后一帧。"
+  "Rtm.LoopTip": "循环播放动画；关闭后停在最后一帧。",
+  "P3dView.View": "视图",
+  "P3dView.ViewTip": "从前、后、侧面、上方或下方查看模型",
+  "P3dView.ViewFront": "前",
+  "P3dView.ViewBack": "后",
+  "P3dView.ViewLeft": "左",
+  "P3dView.ViewRight": "右",
+  "P3dView.ViewTop": "顶",
+  "P3dView.ViewBottom": "底",
+  "P3dView.ViewCorner": "斜角",
+  "P3D.Main.Compact": "更小的文件",
+  "P3D.Main.CompactTip": "省略未选中任何内容的命名选择（约小 15%，不丢失任何内容）。",
+  "P3D.Core.LogDroppedEmpty": "已移除 {0} 个空选择：{1} MB → {2} MB。"
 }

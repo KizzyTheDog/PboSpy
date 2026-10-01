@@ -437,7 +437,7 @@
   "P3dView.TextureFolder": "Cartella texture…",
   "P3dView.TextureFolderTip": "Cartella con i dati di gioco estratti (ad esempio la tua unità P:). Le texture vengono cercate anche in ogni PBO aperto e nelle cartelle vicine al modello.",
   "P3dView.Textures": "Texture",
-  "P3dView.Hint": "Trascina con il tasto sinistro: ruota · Trascina con il tasto destro o Maiusc: sposta · Rotella: zoom · Doppio clic: ripristina · Shift+`: cammina",
+  "P3dView.Hint": "Trascina sinistro: ruota · Trascina destro: guardati intorno · Trascina centrale o Maiusc: sposta · Rotella: zoom · Doppio clic: ripristina · Maiusc+`: cammina",
   "P3dView.Loading": "Costruzione del modello…",
   "P3dView.NoGeometry": "Questo LOD non ha facce da mostrare.",
   "P3dView.Error": "Impossibile costruire il modello: {0}",
@@ -675,5 +675,17 @@
   "Rtm.TexturesTip": "Mostra il rig con le sue texture di gioco (lette dalla tua installazione di Arma 3).",
   "Rtm.Pause": "Pausa",
   "Rtm.Loop": "Ciclo",
-  "Rtm.LoopTip": "Ripete l'animazione all'infinito; spento si ferma sull'ultimo fotogramma."
+  "Rtm.LoopTip": "Ripete l'animazione all'infinito; spento si ferma sull'ultimo fotogramma.",
+  "P3dView.View": "Vista",
+  "P3dView.ViewTip": "Guarda il modello da davanti, dietro, dai lati, dall'alto o dal basso",
+  "P3dView.ViewFront": "Fronte",
+  "P3dView.ViewBack": "Retro",
+  "P3dView.ViewLeft": "Sinistra",
+  "P3dView.ViewRight": "Destra",
+  "P3dView.ViewTop": "Sopra",
+  "P3dView.ViewBottom": "Sotto",
+  "P3dView.ViewCorner": "Angolo",
+  "P3D.Main.Compact": "File più piccolo",
+  "P3D.Main.CompactTip": "Tralascia le selezioni con nome vuote (circa 15% in meno, nulla va perso).",
+  "P3D.Core.LogDroppedEmpty": "{0} selezioni vuote rimosse: {1} MB → {2} MB."
 }

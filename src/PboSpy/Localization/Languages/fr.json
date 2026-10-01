@@ -437,7 +437,7 @@
   "P3dView.TextureFolder": "Dossier des textures…",
   "P3dView.TextureFolderTip": "Dossier contenant les données du jeu décompressées (par exemple votre lecteur P:). Les textures sont aussi recherchées dans chaque PBO ouvert et dans les dossiers autour du modèle.",
   "P3dView.Textures": "Textures",
-  "P3dView.Hint": "Glisser clic gauche : pivoter · Glisser clic droit ou Maj : déplacer · Molette : zoom · Double clic : réinitialiser · Shift+`: marcher",
+  "P3dView.Hint": "Glisser gauche : tourner · Glisser droit : regarder autour · Glisser milieu ou Maj : déplacer · Molette : zoom · Double clic : réinitialiser · Maj+` : marcher",
   "P3dView.Loading": "Construction du modèle…",
   "P3dView.NoGeometry": "Ce LOD n'a aucune face à afficher.",
   "P3dView.Error": "Impossible de construire le modèle : {0}",
@@ -675,5 +675,17 @@
   "Rtm.TexturesTip": "Afficher le rig avec ses textures du jeu (lues depuis votre installation d'Arma 3).",
   "Rtm.Pause": "Pause",
   "Rtm.Loop": "Boucle",
-  "Rtm.LoopTip": "Rejouer l'animation en boucle ; désactivé, elle s'arrête sur la dernière image."
+  "Rtm.LoopTip": "Rejouer l'animation en boucle ; désactivé, elle s'arrête sur la dernière image.",
+  "P3dView.View": "Vue",
+  "P3dView.ViewTip": "Voir le modèle de face, de dos, des côtés, de dessus ou de dessous",
+  "P3dView.ViewFront": "Avant",
+  "P3dView.ViewBack": "Arrière",
+  "P3dView.ViewLeft": "Gauche",
+  "P3dView.ViewRight": "Droite",
+  "P3dView.ViewTop": "Dessus",
+  "P3dView.ViewBottom": "Dessous",
+  "P3dView.ViewCorner": "Coin",
+  "P3D.Main.Compact": "Fichier plus léger",
+  "P3D.Main.CompactTip": "Omettre les sélections nommées vides (environ 15 % plus petit, rien n'est perdu).",
+  "P3D.Core.LogDroppedEmpty": "{0} sélections vides retirées : {1} Mo → {2} Mo."
 }

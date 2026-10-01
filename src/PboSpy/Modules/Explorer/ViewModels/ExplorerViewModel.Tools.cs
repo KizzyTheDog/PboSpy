@@ -93,7 +93,7 @@ public partial class ExplorerViewModel
                         {
                             continue;
                         }
-                        var mesh = PboSpy.Modules.P3d.Scene.ModelMeshBuilder.Build(lod);
+                        var mesh = PboSpy.Modules.P3d.Scene.ModelMeshBuilder.Build(lod, PboSpy.Modules.P3d.Scene.ConfigTextures.Cached(file, tree, lod));
                         var resolver = new PboSpy.Modules.P3d.Scene.TextureResolver(file, tree);
                         PboSpy.Modules.P3d.Views.ModelExportWindow.Configure(resolver);
                         PboSpy.Modules.P3d.Scene.ModelExport.Write(Path.Combine(folder, Path.GetFileNameWithoutExtension(file.Name) + extension), mesh.Parts, resolver,
