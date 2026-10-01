@@ -2,6 +2,13 @@
 
 Newest first. Each commit adds an entry: what changed, why, and what was checked.
 
+## 2026-10-01 · unreleased · RTM playback fixed
+
+- **RTM playback fixed**: binarised animations are stored per bone relative to the parent, with the rotation conjugated and turned 180° about Y. Found by converting the walk with Mikero's DeRtm and matching every bone; the body, arms and hands now pose correctly.
+- Text RTMs that start with an RTM_MDAT block (as DeRtm writes them) now open.
+- Mikero's free Linux tools (DeRtm etc.) are set up in WSL Ubuntu for checking formats.
+- Checked in test mode: walk on the body and on the NATO soldier rig.
+
 ## 2026-10-01 · unreleased · rigs, workshop, LOD export, test mode
 
 - **RTM rigs**: pick the body the animation plays on (body, NATO, CSAT, civilian, pilot, each with a head, from your Arma 3 install) or add your own binarised .p3d; the choice is remembered.

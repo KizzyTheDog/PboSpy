@@ -156,3 +156,7 @@
 - **Test mode** (`--test`): off-screen, no focus or taskbar button, own settings, runs next to a normal PboSpy; driven through %TEMP%\PboSpyTest. Windows no longer force themselves to the front in that mode.
 - FPS stats moved to the top right of the 3D view.
 - Checked in test mode: Workshop lists 82 items with names, wireframe, outline (12 LODs, meshes per LOD); LOD export (CCA 10 / 6 / 3.2 MB); Tidy self-check.
+- **RTM playback fixed**: binarised animations are stored per bone relative to the parent, with the rotation conjugated and turned 180° about Y. Found by converting the walk with Mikero's DeRtm and matching every bone; the body, arms and hands now pose correctly.
+- Text RTMs that start with an RTM_MDAT block (as DeRtm writes them) now open.
+- Mikero's free Linux tools (DeRtm etc.) are set up in WSL Ubuntu for checking formats.
+- Checked in test mode: walk on the body and on the NATO soldier rig.

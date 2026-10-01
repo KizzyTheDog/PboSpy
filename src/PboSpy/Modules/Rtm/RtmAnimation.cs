@@ -32,17 +32,23 @@ internal sealed class RtmAnimation
             var rtm = new RTMB(stream);
             var frames = rtm.Phases.Select(phase => phase.Select(t =>
             {
+                // Stored relative to the parent bone, and conjugated and turned 180° about Y compared with the text
+                // format: checked bone by bone against Mikero's DeRtm output.
                 var q = t.Quaternion;
-                var m = Matrix4x4.CreateFromQuaternion(new Quaternion(q.X, q.Y, q.Z, q.W));
-                m.Translation = t.Vector.Vector3;
+                var v = t.Vector.Vector3;
+                var m = Matrix4x4.CreateFromQuaternion(new Quaternion(q.X, -q.Y, q.Z, q.W));
+                m.Translation = new Vector3(-v.X, v.Y, -v.Z);
                 return m;
             }).ToArray()).ToArray();
             return Make("Binarised (BMTR v" + rtm.Version + ")", rtm.BoneNames, rtm.PhaseTimes, frames, rtm.Step.Vector3,
                 rtm.MetaDataValues, rtm.AnimKeyStones?.Select(k => k.ToString()));
         }
-        var text = new RTM(stream);
+        // Text RTMs can start with an RTM_MDAT block (properties) before the RTM_0101 data.
+        var raw = stream.ToArray();
+        var at = Math.Max(0, Encoding.ASCII.GetString(raw).IndexOf("RTM_0101", StringComparison.Ordinal));
+        var text = new RTM(new MemoryStream(raw, at, raw.Length - at));
         var count = text.FrameTimes.Length;
-        var bones = text.BoneNames.Select(b => b.TrimEnd('\0')).ToArray();
+        var bones = text.BoneNames.Select(b => b.Split('\0')[0].Trim()).ToArray();
         var matrices = Enumerable.Range(0, count).Select(f => Enumerable.Range(0, bones.Length).Select(b => text.FrameTransforms[f, b].Matrix).ToArray()).ToArray();
         return Make("RTM_0101 (editable)", bones, text.FrameTimes, matrices, text.Displacement.Vector3, null, null);
     }
@@ -218,8 +224,7 @@ internal sealed class RtmRig
         {
             lookup.TryAdd(animation.Bones[b], b);
         }
-        // ponytail: binarised transforms chained down the skeleton gets the body and legs right, the arms are still off;
-        // the exact BMTR convention isn't documented, revisit with a known-good converted RTM_0101 to compare.
+        // Binarised animations are relative to the parent bone; text ones already hold the final matrices.
         var local = BoneNames.Select(n => lookup.TryGetValue(n, out var b) && b < matrices.Length ? matrices[b] : Matrix4x4.Identity).ToArray();
         var byBone = new Matrix4x4[local.Length];
         var done = new bool[local.Length];

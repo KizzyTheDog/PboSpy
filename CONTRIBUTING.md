@@ -37,7 +37,7 @@ Open work, roughly in order. Done items move to [DEVLOG.md](DEVLOG.md) and [CHAN
 
 ### Ideas
 
-- [~] RTM preview: details, rigs (built-in and your own); binarised playback still wrong on the arms
+- [x] RTM preview: plays on built-in game rigs or your own, details tab, text and binarised RTMs
 - [x] Search across all opened PBOs (Find in scripts, Ctrl+F); diff still to do
 - [ ] WRP (terrain) info
 - [ ] Signature / bikey checker
