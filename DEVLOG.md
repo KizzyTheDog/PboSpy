@@ -2,7 +2,7 @@
 
 Newest first. Each commit adds an entry: what changed, why, and what was checked.
 
-## 2026-10-01 · unreleased · config decals, smoother wireframe, view menu, smaller MLODs
+## 2026-10-01 · v2.2.2 · config decals, smoother wireframe, view menu, smaller MLODs
 
 - **Decals and slots follow the vehicle config**: PboSpy finds the CfgVehicles class using the model (in the opened PBOs), takes its hiddenSelections and the default paint scheme (textureList or the first TextureSources), and builds the mesh with those textures per section; blank slots are left out like in game. The Chinook's white-backed art decal and blank number/decal slots are gone, the rest stays (597,924 of 604,440 triangles shown). Explorer export uses the same.
 - **Wireframe while moving**: drawn at half resolution during camera moves (9–10 ms instead of 46–60 ms on the Chinook at 2560 px), sharp again when it stops; hot loops are compiled optimised from the start.
@@ -13,7 +13,7 @@ Newest first. Each commit adds an entry: what changed, why, and what was checked
 - Texture list shows decoded names. Builder says .NET 8; build.bat starts the builder with no console window.
 - Test mode: main window at 2560×1392, `view`, `orbit` and `openlargest` commands, timing log.
 
-## 2026-10-01 · unreleased · play/pause, loop, faster big models
+## 2026-10-01 · v2.2.2 · play/pause, loop, faster big models
 
 - **Animation preview**: the Play button reads Pause while playing and carries on from where it was; new **Loop** toggle (on by default, remembered); without loop it stops on the last frame.
 - **Faster loading of big models**: MLOD selections are read in one go instead of byte by byte, and models are parsed through a 4 MB buffer. The 473 MB cca_mlod.p3d opens in about 4.3 s instead of 6.5 s.
