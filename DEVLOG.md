@@ -2,14 +2,14 @@
 
 Newest first. Each commit adds an entry: what changed, why, and what was checked.
 
-## 2026-10-01 · unreleased · RTM playback fixed
+## 2026-10-01 · v2.2.0 · RTM playback fixed
 
 - **RTM playback fixed**: binarised animations are stored per bone relative to the parent, with the rotation conjugated and turned 180° about Y. Found by converting the walk with Mikero's DeRtm and matching every bone; the body, arms and hands now pose correctly.
 - Text RTMs that start with an RTM_MDAT block (as DeRtm writes them) now open.
 - Mikero's free Linux tools (DeRtm etc.) are set up in WSL Ubuntu for checking formats.
 - Checked in test mode: walk on the body and on the NATO soldier rig.
 
-## 2026-10-01 · unreleased · rigs, workshop, LOD export, test mode
+## 2026-10-01 · v2.2.0 · rigs, workshop, LOD export, test mode
 
 - **RTM rigs**: pick the body the animation plays on (body, NATO, CSAT, civilian, pilot, each with a head, from your Arma 3 install) or add your own binarised .p3d; the choice is remembered.
 - **Steam Workshop** (Tools menu): every Arma 3 workshop item on this PC (Steam subscriptions, named from meta.cpp or the !Workshop links, and steamcmd downloads) with a filter; download by link or ID with steamcmd in its own window. Opening asks to copy the item to Downloads\PboSpy Workshop first.
@@ -20,7 +20,7 @@ Newest first. Each commit adds an entry: what changed, why, and what was checked
 - FPS stats moved to the top right of the 3D view.
 - Checked in test mode: Workshop lists 82 items with names, wireframe, outline (12 LODs, meshes per LOD); LOD export (CCA 10 / 6 / 3.2 MB); Tidy self-check.
 
-## 2026-10-01 · unreleased · big feature batch
+## 2026-10-01 · v2.2.0 · big feature batch
 
 - **Wireframe like Blender's X-ray**: drawn as a 2D overlay, faces invisible, every edge once as a 1 px line, overlaps brighter; redrawn at most once per frame. **Dense areas** button colours edges by triangle size.
 - **Decals**: see-through textures no longer get a borrowed shine map (that painted their backgrounds grey). Plain white placeholder slots (decals, tail numbers filled in by scripts) are hidden like in game.
