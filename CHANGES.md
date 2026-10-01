@@ -149,10 +149,10 @@
 - Checked: export in Blender (CCA 50% decimate: 112k tris, 7 joined objects all under 20k, 28/28 textured; FBX multi-material works). Not yet checked in the app: wireframe, walk, find, outline, picker.
 - Removed: the GPU texture wireframe (WireMesh/WireLines/WireFill) and the 90° orbit limit.
 - **RTM rigs**: pick the body the animation plays on (body, NATO, CSAT, civilian, pilot, each with a head, from your Arma 3 install) or add your own binarised .p3d; the choice is remembered.
-- **Steam Workshop** (Tools menu): every Arma 3 workshop item on this PC (Steam subscriptions, named from meta.cpp or the !Workshop links, and steamcmd downloads) with a filter; download by link or ID with steamcmd in its own window. Opening asks to copy the item to DownloadsPboSpy Workshop first.
+- **Steam Workshop** (Tools menu): every Arma 3 workshop item on this PC (Steam subscriptions, named from meta.cpp or the !Workshop links, and steamcmd downloads) with a filter; download by link or ID with steamcmd in its own window. Opening asks to copy the item to Downloads\PboSpy Workshop first.
 - **LOD copies** in the export window: extra files at e.g. 50 / 25 / 10 % of the triangles (name_lod1, name_lod2…), same textures.
 - **Presets** for Debinarize, model.cfg and Strip proxies run the action instead of only opening P3D Tools.
 - **Tidy script** (Edit menu, Ctrl+Shift+T): re-indents by brackets and drops padding blank lines, in the view only.
-- **Test mode** (`--test`): off-screen, no focus or taskbar button, own settings, runs next to a normal PboSpy; driven through %TEMP%PboSpyTest. Windows no longer force themselves to the front in that mode.
+- **Test mode** (`--test`): off-screen, no focus or taskbar button, own settings, runs next to a normal PboSpy; driven through %TEMP%\PboSpyTest. Windows no longer force themselves to the front in that mode.
 - FPS stats moved to the top right of the 3D view.
 - Checked in test mode: Workshop lists 82 items with names, wireframe, outline (12 LODs, meshes per LOD); LOD export (CCA 10 / 6 / 3.2 MB); Tidy self-check.
