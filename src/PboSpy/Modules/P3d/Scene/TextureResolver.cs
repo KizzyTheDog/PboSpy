@@ -203,24 +203,30 @@ internal sealed class TextureResolver
         {
             return new TextureResult();
         }
+        var key = Normalize(texture);
+        // A picked texture wins, even on a placeholder or procedural slot (e.g. a decal chosen for a blank one).
+        if (Overrides.TryGetValue(key, out var chosen))
+        {
+            var alpha = HasAlpha(key) || HasAlpha(Normalize(chosen));
+            if (File.Exists(chosen))
+            {
+                return FromDisk(chosen, TextureSource.Override, maxSize, alpha);
+            }
+            if (_byPath.TryGetValue(Normalize(chosen), out var picked))
+            {
+                return FromFile(picked, TextureSource.Override, maxSize, alpha);
+            }
+        }
+        if (IsInvisible(texture))
+        {
+            return new TextureResult { Color = Colors.Transparent, Source = TextureSource.Procedural, Location = texture };
+        }
         if (IsProcedural(texture))
         {
             var color = ParseProcedural(texture);
             return color == null ? new TextureResult() : new TextureResult { Color = color, Source = TextureSource.Procedural, Location = texture };
         }
-
-        var key = Normalize(texture);
-        if (IsInvisible(key))
-        {
-            return new TextureResult { Color = Colors.Transparent, Source = TextureSource.Procedural, Location = texture };
-        }
-        var keepAlpha = HasAlpha(key);
-
-        if (Overrides.TryGetValue(key, out var chosen) && File.Exists(chosen))
-        {
-            return FromDisk(chosen, TextureSource.Override, maxSize, keepAlpha);
-        }
-        return Locate(key, Variants, maxSize, keepAlpha);
+        return Locate(key, Variants, maxSize, HasAlpha(key));
     }
 
     /// <summary>Normal, specular and ambient maps for a face: rvmat stages first, then files named like the colour texture.</summary>
@@ -333,37 +339,16 @@ internal sealed class TextureResolver
         return null;
     }
 
-    private static readonly Dictionary<string, PboFile> GamePbos = new(StringComparer.OrdinalIgnoreCase);
-    private static readonly Lazy<string> GameFolder = new(() =>
-        Microsoft.Win32.Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Bohemia Interactive\ArmA 3", "main", null) as string);
-
-    // a3\data_f\... lives in the installed game's data_f.pbo (DLCs in their own folders), read from its header only.
     private readonly HashSet<string> _gameIndexed = new(StringComparer.OrdinalIgnoreCase);
 
     private void IndexGame(string key)
     {
         var segments = key.Split('\\');
-        if (segments.Length < 3 || segments[0] != "a3" || !_gameIndexed.Add(segments[1]) || !Directory.Exists(GameFolder.Value))
+        if (segments.Length < 3 || segments[0] != "a3" || !_gameIndexed.Add(segments[1]))
         {
             return;
         }
-        PboFile pbo;
-        lock (GamePbos)
-        {
-            if (!GamePbos.TryGetValue(segments[1], out pbo))
-            {
-                try
-                {
-                    var path = Directory.EnumerateFiles(GameFolder.Value, segments[1] + ".pbo", SearchOption.AllDirectories).FirstOrDefault();
-                    pbo = path == null ? null : new PboFile(new BIS.PBO.PBO(path, false));
-                }
-                catch (Exception)
-                {
-                    pbo = null;
-                }
-                GamePbos[segments[1]] = pbo;
-            }
-        }
+        var pbo = GameData.Pbo(segments[1]);
         if (pbo != null)
         {
             foreach (var entry in PboEntries.GetValue(pbo, p => p.AllEntries.ToList()))
@@ -441,6 +426,16 @@ internal sealed class TextureResolver
     }
 
     private Dictionary<string, string> _nearIndex;
+
+    /// <summary>Every image the model could use: in the opened PBOs and in the folders around it. Path is a PBO path or a file on disk.</summary>
+    public List<(string Path, FileBase File)> Images()
+    {
+        // Base-game files (indexed for a3\ references) would bury the model's own textures.
+        var images = _byPath.Values.Where(f => Variants.Contains(f.Extension.ToLowerInvariant()) && !Normalize(f.FullPath).StartsWith(@"a3\"))
+            .Select(f => (f.FullPath, f)).ToList();
+        images.AddRange(NearIndex().Values.Where(p => !p.EndsWith(".rvmat", StringComparison.OrdinalIgnoreCase)).Select(p => (p, (FileBase)null)));
+        return images.GroupBy(i => i.Item1, StringComparer.OrdinalIgnoreCase).Select(g => g.First()).ToList();
+    }
 
     private static string Loose(string name)
     {
@@ -528,8 +523,10 @@ internal sealed class TextureResolver
     }
 
     // Base-game placeholders the game draws as nothing (unused hidden selections, empty clan logo slot).
+    // Plain white procedural is the usual placeholder on decal / number slots that scripts fill in (blank by default).
     public static bool IsInvisible(string texture) =>
-        Path.GetFileNameWithoutExtension(Normalize(texture)) is "empty" or "empty_ca" or "clear_empty" or "bis_klan";
+        Path.GetFileNameWithoutExtension(Normalize(texture)) is "empty" or "empty_ca" or "clear_empty" or "bis_klan"
+        || IsProcedural(texture) && ParseProcedural(texture) == Colors.White;
 
     // Only _ca style textures are meant to be see-through; other suffixes store data in alpha.
     public static bool HasAlpha(string key)
@@ -650,5 +647,43 @@ internal sealed class TextureResolver
         var b = Channel(2, r);
         var a = Channel(3, 1f);
         return Color.FromArgb((byte)(Math.Max(a, 0.15f) * 255), (byte)(r * 255), (byte)(g * 255), (byte)(b * 255));
+    }
+}
+
+/// <summary>Files from the installed Arma 3 (found through the registry), read from the PBO headers only.</summary>
+internal static class GameData
+{
+    private static readonly Dictionary<string, PboFile> Pbos = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly Lazy<string> Folder = new(() =>
+        Microsoft.Win32.Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Bohemia Interactive\ArmA 3", "main", null) as string);
+
+    // a3\data_f\... lives in data_f.pbo; DLC addons sit in their own folders.
+    public static PboFile Pbo(string addon)
+    {
+        lock (Pbos)
+        {
+            if (!Pbos.TryGetValue(addon, out var pbo))
+            {
+                try
+                {
+                    var path = Directory.Exists(Folder.Value)
+                        ? Directory.EnumerateFiles(Folder.Value, addon + ".pbo", SearchOption.AllDirectories).FirstOrDefault() : null;
+                    pbo = path == null ? null : new PboFile(new BIS.PBO.PBO(path, false));
+                }
+                catch (Exception)
+                {
+                    pbo = null;
+                }
+                Pbos[addon] = pbo;
+            }
+            return pbo;
+        }
+    }
+
+    public static PboEntry Find(string path)
+    {
+        var key = TextureResolver.Normalize(path);
+        var segments = key.Split('\\');
+        return segments.Length < 3 ? null : Pbo(segments[1])?.AllEntries.FirstOrDefault(e => TextureResolver.Normalize(e.FullPath) == key);
     }
 }

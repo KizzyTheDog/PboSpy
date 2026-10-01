@@ -8,7 +8,7 @@ namespace PboSpy.Modules.PreviewBinary;
 internal static class PreviewFactories
 {
     [Export("FilePreviewFactory")]
-    [ExportMetadata("Extensions", new[] { ".rtm", ".bin", ".lip",
+    [ExportMetadata("Extensions", new[] { ".bin", ".lip",
         ".fxy", ".wsi", ".shp", ".dbf", ".shx", ".bisurf" })]
     public static Document PreviewGenericBinary(FileBase entry)
     {
@@ -17,9 +17,18 @@ internal static class PreviewFactories
             var text = entry.GetBinaryConfigAsText();
             return new TextPreviewViewModel(entry, text);
         }
-        else
+        using (var stream = new System.IO.MemoryStream())
         {
-            return new BinaryPreviewViewModel(entry);
+            using (var source = entry.GetStream())
+            {
+                source.CopyTo(stream);
+            }
+            stream.Position = 0;
+            if (TexHeaders.Is(stream))
+            {
+                return new TextPreviewViewModel(entry, TexHeaders.ToText(stream));
+            }
         }
+        return new BinaryPreviewViewModel(entry);
     }
 }

@@ -144,6 +144,33 @@ public class OpenPresetsCommandHandler : CommandHandlerBase<OpenPresetsCommandDe
     }
 }
 
+[CommandDefinition]
+public class FindInScriptsCommandDefinition : CommandDefinition
+{
+    public const string CommandName = "Tools.FindInScripts";
+
+    public override string Name => CommandName;
+
+    public override string Text => Loc.T("Find.Title");
+
+    public override string ToolTip => Loc.T("Find.Hint");
+
+    // Inside an open script the editor's own Ctrl+F comes first.
+    [Export]
+    public static CommandKeyboardShortcut KeyGesture =
+        new CommandKeyboardShortcut<FindInScriptsCommandDefinition>(new KeyGesture(Key.F, ModifierKeys.Control));
+}
+
+[CommandHandler]
+public class FindInScriptsCommandHandler : CommandHandlerBase<FindInScriptsCommandDefinition>
+{
+    public override Task Run(Command command)
+    {
+        FindInScriptsWindow.Open();
+        return Task.CompletedTask;
+    }
+}
+
 internal static class MenuDefinitions
 {
     [Export]
@@ -153,6 +180,10 @@ internal static class MenuDefinitions
     [Export]
     public static readonly MenuItemDefinition PresetsMenuItem =
         new CommandMenuItemDefinition<OpenPresetsCommandDefinition>(ToolsWindowsGroup, -1);
+
+    [Export]
+    public static readonly MenuItemDefinition FindInScriptsMenuItem =
+        new CommandMenuItemDefinition<FindInScriptsCommandDefinition>(ToolsWindowsGroup, -2);
 
     [Export]
     public static readonly MenuItemDefinition P3dToolsMenuItem =

@@ -53,7 +53,10 @@ public sealed class AppSettings : INotifyPropertyChanged
     private bool selectFilesAfterExport;
     private string modelExportFormat = ".glb";
     private int modelExportMaxTexture = 2048;
-    private bool modelExportSplit;
+    private bool modelExportSplit = true;
+    private bool modelExportDecimate;
+    private int modelExportKeep = 50;
+    private bool modelExportByMaterial = true;
     private int modelExportSplitAt = 20000;
     private string modelRvmatFolder = "";
     private bool autoUpdate = true;
@@ -103,6 +106,9 @@ public sealed class AppSettings : INotifyPropertyChanged
     public string ModelExportFormat { get => modelExportFormat; set => Set(ref modelExportFormat, value ?? ".glb"); }
     public int ModelExportMaxTexture { get => modelExportMaxTexture; set => Set(ref modelExportMaxTexture, Math.Clamp(value, 64, 8192)); }
     public bool ModelExportSplit { get => modelExportSplit; set => Set(ref modelExportSplit, value); }
+    public bool ModelExportDecimate { get => modelExportDecimate; set => Set(ref modelExportDecimate, value); }
+    public int ModelExportKeep { get => modelExportKeep; set => Set(ref modelExportKeep, Math.Clamp(value, 5, 100)); }
+    public bool ModelExportByMaterial { get => modelExportByMaterial; set => Set(ref modelExportByMaterial, value); }
     public int ModelExportSplitAt { get => modelExportSplitAt; set => Set(ref modelExportSplitAt, Math.Max(100, value)); }
     public string ModelRvmatFolder { get => modelRvmatFolder; set => Set(ref modelRvmatFolder, value ?? ""); }
     public bool AutoUpdate { get => autoUpdate; set => Set(ref autoUpdate, value); }

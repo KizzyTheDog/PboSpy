@@ -22,31 +22,100 @@ internal static class ModelExport
 
     public static readonly string[] Formats = { ".glb", ".gltf", ".fbx", ".obj" };
 
-    /// <summary>The extension picks the format. splitAt > 0 cuts any part with more triangles into pieces (Roblox takes 20,000 per MeshPart).</summary>
-    public static void Write(string target, IReadOnlyList<ModelPart> parts, TextureResolver resolver, int maxSize = 2048, int splitAt = 0)
+    /// <summary>
+    /// The extension picks the format. splitAt > 0 cuts any part with more triangles into pieces (Roblox takes 20,000 per MeshPart).
+    /// decimate (0..1) keeps that share of the triangles. byMaterial false joins parts into as few objects as the split allows.
+    /// </summary>
+    public static void Write(string target, IReadOnlyList<ModelPart> parts, TextureResolver resolver, int maxSize = 2048, int splitAt = 0,
+        double decimate = 1, bool byMaterial = true)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(target));
         parts = parts.Where(p => !TextureResolver.IsInvisible(p.Texture)).ToList();
+        if (decimate < 1)
+        {
+            parts = parts.Select(p => Decimate(p, decimate)).Where(p => p.Triangles > 0).ToList();
+        }
         if (splitAt > 0)
         {
             parts = Split(parts, splitAt);
         }
+        var objects = Group(parts, byMaterial, splitAt);
         switch (Path.GetExtension(target).ToLowerInvariant())
         {
             case ".obj":
-                WriteObj(target, parts, resolver, maxSize);
+                WriteObj(target, objects, resolver, maxSize);
                 break;
             case ".fbx":
-                WriteFbx(target, parts, resolver, maxSize);
+                WriteFbx(target, objects, resolver, maxSize);
                 break;
             case ".gltf":
-                WriteGlb(target, parts, resolver, maxSize, separate: true);
+                WriteGlb(target, objects, resolver, maxSize, separate: true);
                 break;
             default:
-                WriteGlb(target, parts, resolver, maxSize, separate: false);
+                WriteGlb(target, objects, resolver, maxSize, separate: false);
                 break;
         }
     }
+
+    // One object per part, or parts packed together while they stay under the split limit.
+    private static List<List<ModelPart>> Group(IReadOnlyList<ModelPart> parts, bool byMaterial, int limit)
+    {
+        if (byMaterial)
+        {
+            return parts.Select(p => new List<ModelPart> { p }).ToList();
+        }
+        var groups = new List<List<ModelPart>> { new() };
+        var count = 0;
+        foreach (var part in parts)
+        {
+            if (limit > 0 && count + part.Triangles > limit && groups[^1].Count > 0)
+            {
+                groups.Add(new List<ModelPart>());
+                count = 0;
+            }
+            groups[^1].Add(part);
+            count += part.Triangles;
+        }
+        return groups.Where(g => g.Count > 0).ToList();
+    }
+
+    [System.Runtime.InteropServices.DllImport("meshoptimizer", CallingConvention = System.Runtime.InteropServices.CallingConvention.Cdecl)]
+    private static extern nuint meshopt_simplify(uint[] destination, uint[] indices, nuint indexCount, float[] positions, nuint vertexCount,
+        nuint stride, nuint targetIndexCount, float targetError, uint options, out float resultError);
+
+    // meshoptimizer's simplifier: collapses edges by least visible change and keeps UV seams and borders.
+    private static ModelPart Decimate(ModelPart part, double keep)
+    {
+        var mesh = part.Mesh;
+        var indices = mesh.TriangleIndices.Select(i => (uint)i).ToArray();
+        var positions = mesh.Positions.SelectMany(p => new[] { (float)p.X, (float)p.Y, (float)p.Z }).ToArray();
+        var target = (nuint)Math.Max(3, (int)(indices.Length * keep) / 3 * 3);
+        var result = new uint[indices.Length];
+        var count = (int)meshopt_simplify(result, indices, (nuint)indices.Length, positions, (nuint)mesh.Positions.Count, 12, target, 0.05f, 0, out _);
+        var map = new Dictionary<uint, int>();
+        var newPositions = new System.Windows.Media.Media3D.Point3DCollection();
+        var normals = new System.Windows.Media.Media3D.Vector3DCollection();
+        var uvs = new System.Windows.Media.PointCollection();
+        var newIndices = new System.Windows.Media.Int32Collection(count);
+        for (var i = 0; i < count; i++)
+        {
+            var old = result[i];
+            if (!map.TryGetValue(old, out var index))
+            {
+                index = map[old] = newPositions.Count;
+                newPositions.Add(mesh.Positions[(int)old]);
+                normals.Add(old < mesh.Normals.Count ? mesh.Normals[(int)old] : default);
+                uvs.Add(old < mesh.TextureCoordinates.Count ? mesh.TextureCoordinates[(int)old] : default);
+            }
+            newIndices.Add(index);
+        }
+        var simplified = new System.Windows.Media.Media3D.MeshGeometry3D { Positions = newPositions, Normals = normals, TextureCoordinates = uvs, TriangleIndices = newIndices };
+        simplified.Freeze();
+        return new ModelPart { Texture = part.Texture, Material = part.Material, Mesh = simplified, Triangles = count / 3, Offset = part.Offset, Owner = part.Owner };
+    }
+
+    private static string ObjectName(List<ModelPart> group, Dictionary<string, Maps> materials, string stem, int index) =>
+        group.Count == 1 ? materials[Key(group[0])].Name : $"{stem}_{index + 1}";
 
     // Triangles sorted along the part's longest side and cut in runs, so each piece stays in one area.
     private static List<ModelPart> Split(IReadOnlyList<ModelPart> parts, int limit)
@@ -232,8 +301,9 @@ internal static class ModelExport
         return stream.ToArray();
     }
 
-    private static void WriteObj(string target, IReadOnlyList<ModelPart> parts, TextureResolver resolver, int maxSize)
+    private static void WriteObj(string target, List<List<ModelPart>> objects, TextureResolver resolver, int maxSize)
     {
+        var parts = objects.SelectMany(g => g).ToList();
         var folder = Path.GetDirectoryName(target);
         var stem = Path.GetFileNameWithoutExtension(target);
         var textures = Path.Combine(folder, stem + "_textures");
@@ -289,11 +359,12 @@ internal static class ModelExport
         using var obj = new StreamWriter(target);
         obj.WriteLine($"mtllib {stem}.mtl");
         var offset = 1;
-        foreach (var part in parts)
+        foreach (var (group, number) in objects.Select((g, i) => (g, i)))
         {
-            var name = materials[Key(part)].Name;
-            obj.WriteLine($"o {name}");
-            obj.WriteLine($"usemtl {name}");
+            obj.WriteLine($"o {ObjectName(group, materials, stem, number)}");
+            foreach (var part in group)
+            {
+            obj.WriteLine($"usemtl {materials[Key(part)].Name}");
             var mesh = part.Mesh;
             foreach (var p in mesh.Positions)
             {
@@ -314,11 +385,13 @@ internal static class ModelExport
                 obj.WriteLine($"f {a}/{a}/{a} {b}/{b}/{b} {c}/{c}/{c}");
             }
             offset += mesh.Positions.Count;
+            }
         }
     }
 
-    private static void WriteGlb(string target, IReadOnlyList<ModelPart> parts, TextureResolver resolver, int maxSize, bool separate)
+    private static void WriteGlb(string target, List<List<ModelPart>> objects, TextureResolver resolver, int maxSize, bool separate)
     {
+        var parts = objects.SelectMany(g => g).ToList();
         var stem = Path.GetFileNameWithoutExtension(target);
         var folder = Path.GetDirectoryName(target);
         var materials = Materials(parts, resolver, maxSize);
@@ -411,8 +484,11 @@ internal static class ModelExport
             materialIndex[key] = gltfMaterials.Count - 1;
         }
 
-        foreach (var part in parts)
+        foreach (var (group, number) in objects.Select((g, i) => (g, i)))
         {
+            var primitives = new JsonArray();
+            foreach (var part in group)
+            {
             var mesh = part.Mesh;
             var count = mesh.Positions.Count;
             var positions = new byte[count * 12];
@@ -446,17 +522,15 @@ internal static class ModelExport
             var normal = Accessor(View(normals, 34962), 5126, count, "VEC3");
             var uv = Accessor(View(uvs, 34962), 5126, count, "VEC2");
             var index = Accessor(View(indices, 34963), 5125, mesh.TriangleIndices.Count, "SCALAR");
-            var name = materials[Key(part)].Name;
-            meshes.Add(new JsonObject
+            primitives.Add(new JsonObject
             {
-                ["name"] = name,
-                ["primitives"] = new JsonArray(new JsonObject
-                {
-                    ["attributes"] = new JsonObject { ["POSITION"] = position, ["NORMAL"] = normal, ["TEXCOORD_0"] = uv },
-                    ["indices"] = index,
-                    ["material"] = materialIndex[Key(part)]
-                })
+                ["attributes"] = new JsonObject { ["POSITION"] = position, ["NORMAL"] = normal, ["TEXCOORD_0"] = uv },
+                ["indices"] = index,
+                ["material"] = materialIndex[Key(part)]
             });
+            }
+            var name = ObjectName(group, materials, Path.GetFileNameWithoutExtension(target), number);
+            meshes.Add(new JsonObject { ["name"] = name, ["primitives"] = primitives });
             nodes.Add(new JsonObject { ["name"] = name, ["mesh"] = meshes.Count - 1 });
         }
 
@@ -530,8 +604,9 @@ internal static class ModelExport
         }
     }
 
-    private static void WriteFbx(string target, IReadOnlyList<ModelPart> parts, TextureResolver resolver, int maxSize)
+    private static void WriteFbx(string target, List<List<ModelPart>> groups, TextureResolver resolver, int maxSize)
     {
+        var parts = groups.SelectMany(g => g).ToList();
         var folder = Path.GetDirectoryName(target);
         var stem = Path.GetFileNameWithoutExtension(target);
         var materials = Materials(parts, resolver, maxSize);
@@ -602,43 +677,58 @@ internal static class ModelExport
                 links.Add("C", "OP", texture, id, slot);
             }
         }
-        var count = 0;
-        foreach (var part in parts)
+        foreach (var (group, number) in groups.Select((g, i) => (g, i)))
         {
-            var mesh = part.Mesh;
-            var name = materials[Key(part)].Name + "_" + count++;
+            var name = ObjectName(group, materials, stem, number) + "_" + number;
             var geometry = next++;
             var model = next++;
-            var polygon = new int[mesh.TriangleIndices.Count];
-            for (var i = 0; i + 2 < polygon.Length; i += 3)
+            // Joined parts: one mesh, and each triangle says which of the object's materials it uses.
+            var used = group.Select(Key).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+            var vertices = new List<double>();
+            var normalData = new List<double>();
+            var uvData = new List<double>();
+            var polygon = new List<int>();
+            var perTriangle = new List<int>();
+            foreach (var part in group)
             {
-                polygon[i] = mesh.TriangleIndices[i];
-                polygon[i + 1] = mesh.TriangleIndices[i + 1];
-                polygon[i + 2] = -mesh.TriangleIndices[i + 2] - 1;
+                var mesh = part.Mesh;
+                var start = vertices.Count / 3;
+                vertices.AddRange(mesh.Positions.SelectMany(p => new[] { p.X + part.Offset.X, p.Y + part.Offset.Y, p.Z + part.Offset.Z }));
+                normalData.AddRange(Enumerable.Range(0, mesh.Positions.Count).SelectMany(i => i < mesh.Normals.Count ? new[] { mesh.Normals[i].X, mesh.Normals[i].Y, mesh.Normals[i].Z } : new[] { 0.0, 1, 0 }));
+                uvData.AddRange(Enumerable.Range(0, mesh.Positions.Count).SelectMany(i => i < mesh.TextureCoordinates.Count ? new[] { mesh.TextureCoordinates[i].X, 1 - mesh.TextureCoordinates[i].Y } : new[] { 0.0, 0 }));
+                var material = used.IndexOf(Key(part));
+                for (var i = 0; i + 2 < mesh.TriangleIndices.Count; i += 3)
+                {
+                    polygon.Add(start + mesh.TriangleIndices[i]);
+                    polygon.Add(start + mesh.TriangleIndices[i + 1]);
+                    polygon.Add(-(start + mesh.TriangleIndices[i + 2]) - 1);
+                    perTriangle.Add(material);
+                }
             }
+            var uvIndex = polygon.Select(i => i < 0 ? -i - 1 : i).ToArray();
             var geo = objects.Add("Geometry", geometry, Named(name, "Geometry"), "Mesh");
-            geo.Add("Vertices", mesh.Positions.SelectMany(p => new[] { p.X + part.Offset.X, p.Y + part.Offset.Y, p.Z + part.Offset.Z }).ToArray());
-            geo.Add("PolygonVertexIndex", polygon);
+            geo.Add("Vertices", vertices.ToArray());
+            geo.Add("PolygonVertexIndex", polygon.ToArray());
             geo.Add("GeometryVersion", 124);
             var normals = geo.Add("LayerElementNormal", 0);
             normals.Add("Version", 101);
             normals.Add("Name", "");
             normals.Add("MappingInformationType", "ByVertice");
             normals.Add("ReferenceInformationType", "Direct");
-            normals.Add("Normals", mesh.Normals.SelectMany(n => new[] { n.X, n.Y, n.Z }).ToArray());
+            normals.Add("Normals", normalData.ToArray());
             var uv = geo.Add("LayerElementUV", 0);
             uv.Add("Version", 101);
             uv.Add("Name", "UVMap");
             uv.Add("MappingInformationType", "ByPolygonVertex");
             uv.Add("ReferenceInformationType", "IndexToDirect");
-            uv.Add("UV", mesh.TextureCoordinates.SelectMany(t => new[] { t.X, 1 - t.Y }).ToArray());
-            uv.Add("UVIndex", mesh.TriangleIndices.ToArray());
+            uv.Add("UV", uvData.ToArray());
+            uv.Add("UVIndex", uvIndex);
             var mat = geo.Add("LayerElementMaterial", 0);
             mat.Add("Version", 101);
             mat.Add("Name", "");
-            mat.Add("MappingInformationType", "AllSame");
+            mat.Add("MappingInformationType", used.Count == 1 ? "AllSame" : "ByPolygon");
             mat.Add("ReferenceInformationType", "IndexToDirect");
-            mat.Add("Materials", new[] { 0 });
+            mat.Add("Materials", used.Count == 1 ? new[] { 0 } : perTriangle.ToArray());
             var layer = geo.Add("Layer", 0);
             layer.Add("Version", 100);
             foreach (var type in new[] { "LayerElementNormal", "LayerElementMaterial", "LayerElementUV" })
@@ -653,7 +743,10 @@ internal static class ModelExport
             node.Add("Culling", "CullingOff");
             links.Add("C", "OO", model, 0L);
             links.Add("C", "OO", geometry, model);
-            links.Add("C", "OO", materialIds[Key(part)], model);
+            foreach (var key in used)
+            {
+                links.Add("C", "OO", materialIds[key], model);
+            }
         }
 
         using var file = new BinaryWriter(File.Create(target));

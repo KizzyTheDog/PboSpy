@@ -97,7 +97,8 @@ public partial class ExplorerViewModel
                         var resolver = new PboSpy.Modules.P3d.Scene.TextureResolver(file, tree);
                         PboSpy.Modules.P3d.Views.ModelExportWindow.Configure(resolver);
                         PboSpy.Modules.P3d.Scene.ModelExport.Write(Path.Combine(folder, Path.GetFileNameWithoutExtension(file.Name) + extension), mesh.Parts, resolver,
-                            PboSpy.Modules.P3d.Views.ModelExportWindow.MaxTexture, PboSpy.Modules.P3d.Views.ModelExportWindow.SplitAt);
+                            PboSpy.Modules.P3d.Views.ModelExportWindow.MaxTexture, PboSpy.Modules.P3d.Views.ModelExportWindow.SplitAt,
+                            PboSpy.Modules.P3d.Views.ModelExportWindow.Keep, PboSpy.Modules.P3d.Views.ModelExportWindow.ByMaterial);
                     }
                     catch (Exception ex)
                     {

@@ -20,6 +20,9 @@ public class ModelExportWindow : ToolWindow
     private readonly ComboBox _size = new() { ItemsSource = new[] { 512, 1024, 2048, 4096, 8192 } };
     private readonly CheckBox _split = new();
     private readonly TextBox _splitAt = new() { Width = 80, HorizontalAlignment = HorizontalAlignment.Left };
+    private readonly CheckBox _byMaterial = new();
+    private readonly CheckBox _decimate = new();
+    private readonly TextBox _keep = new() { Width = 50, Margin = new Thickness(8, 0, 4, 0) };
     private readonly TextBox _rvmats = new();
     private readonly TextBox _textures = new();
     private readonly TextBlock _status = new() { TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 8, 0, 0) };
@@ -45,6 +48,12 @@ public class ModelExportWindow : ToolWindow
         _rvmats.Text = _settings.ModelRvmatFolder;
         _textures.Text = _settings.ModelTextureFolder;
         _split.Content = Loc.T("Export.Split");
+        _byMaterial.Content = Loc.T("Export.ByMaterial");
+        _byMaterial.IsChecked = _settings.ModelExportByMaterial;
+        _decimate.Content = Loc.T("Export.Decimate");
+        _decimate.IsChecked = _settings.ModelExportDecimate;
+        _keep.Text = _settings.ModelExportKeep.ToString();
+        _keep.SetBinding(IsEnabledProperty, new System.Windows.Data.Binding(nameof(CheckBox.IsChecked)) { Source = _decimate });
 
         var grid = new Grid { Margin = new Thickness(14) };
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
@@ -86,13 +95,19 @@ public class ModelExportWindow : ToolWindow
             };
             return button;
         }
-        Row("Export.Format", _format, tip: Loc.T("Export.FormatTip"));
-        Row("Export.MaxTexture", _size, tip: Loc.T("Export.MaxTextureTip"));
         var splitPanel = new StackPanel { Orientation = Orientation.Horizontal };
         splitPanel.Children.Add(_split);
         splitPanel.Children.Add(_splitAt);
         _splitAt.Margin = new Thickness(8, 0, 0, 0);
         Row("Export.SplitLabel", splitPanel, tip: Loc.T("Export.SplitTip"));
+        Row("Export.Objects", _byMaterial, tip: Loc.T("Export.ByMaterialTip"));
+        var decimatePanel = new StackPanel { Orientation = Orientation.Horizontal };
+        decimatePanel.Children.Add(_decimate);
+        decimatePanel.Children.Add(_keep);
+        decimatePanel.Children.Add(new TextBlock { Text = "%", VerticalAlignment = VerticalAlignment.Center });
+        Row("Export.DecimateLabel", decimatePanel, tip: Loc.T("Export.DecimateTip"));
+        Row("Export.Format", _format, tip: Loc.T("Export.FormatTip"));
+        Row("Export.MaxTexture", _size, tip: Loc.T("Export.MaxTextureTip"));
         Row("Export.RvmatFolder", _rvmats, Browse(_rvmats), Loc.T("Export.RvmatFolderTip"));
         Row("P3dView.TextureFolder", _textures, Browse(_textures), Loc.T("P3dView.TextureFolderTip"));
 
@@ -117,6 +132,9 @@ public class ModelExportWindow : ToolWindow
         _settings.ModelExportMaxTexture = _size.SelectedItem is int size ? size : 2048;
         _settings.ModelExportSplit = _split.IsChecked == true;
         _settings.ModelExportSplitAt = int.TryParse(_splitAt.Text, out var at) ? at : 20000;
+        _settings.ModelExportByMaterial = _byMaterial.IsChecked == true;
+        _settings.ModelExportDecimate = _decimate.IsChecked == true;
+        _settings.ModelExportKeep = int.TryParse(_keep.Text.Trim('%', ' '), out var keep) ? keep : 50;
         _settings.ModelRvmatFolder = _rvmats.Text.Trim();
         _settings.ModelTextureFolder = _textures.Text.Trim();
         _settings.Save();
@@ -166,4 +184,8 @@ public class ModelExportWindow : ToolWindow
     public static int SplitAt => AppSettings.Default.ModelExportSplit ? AppSettings.Default.ModelExportSplitAt : 0;
 
     public static string Extension => AppSettings.Default.ModelExportFormat;
+
+    public static double Keep => AppSettings.Default.ModelExportDecimate ? AppSettings.Default.ModelExportKeep / 100.0 : 1;
+
+    public static bool ByMaterial => AppSettings.Default.ModelExportByMaterial;
 }

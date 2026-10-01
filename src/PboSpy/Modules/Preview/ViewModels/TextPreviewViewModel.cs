@@ -55,6 +55,36 @@ public class TextPreviewViewModel : PreviewViewModel, ICommandHandler<ExtractAsT
         var extension = _model.Extension.ToLower();
         ArmaHighlighting.Attach(_view.TextEditor, extension,
             () => _languageDefinitionManager.GetDefinitionByExtension(extension == ".bin" ? ".cpp" : extension)?.SyntaxHighlighting);
+        ApplyGoTo();
+    }
+
+    private (int Line, string Term)? _goTo;
+
+    /// <summary>Selects the search term on that line (or the whole line) and scrolls to it.</summary>
+    public void GoTo(int line, string term)
+    {
+        _goTo = (line, term);
+        ApplyGoTo();
+    }
+
+    private void ApplyGoTo()
+    {
+        if (_view == null || _goTo == null)
+        {
+            return;
+        }
+        var (number, term) = _goTo.Value;
+        _goTo = null;
+        var editor = _view.TextEditor;
+        // After layout, or the scroll lands short on a freshly opened tab.
+        editor.Dispatcher.BeginInvoke(() =>
+        {
+            var line = editor.Document.GetLineByNumber(Math.Clamp(number, 1, editor.Document.LineCount));
+            var at = editor.Document.GetText(line).IndexOf(term ?? "", StringComparison.OrdinalIgnoreCase);
+            editor.Select(at >= 0 ? line.Offset + at : line.Offset, at >= 0 ? term.Length : line.Length);
+            editor.TextArea.Caret.Offset = line.Offset;
+            editor.ScrollToLine(line.LineNumber);
+        }, System.Windows.Threading.DispatcherPriority.Loaded);
     }
 
     void ICommandHandler<ExtractAsTextCommandDefinition>.Update(Command command)

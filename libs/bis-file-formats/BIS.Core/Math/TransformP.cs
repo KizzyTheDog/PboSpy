@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using BIS.Core.Streams;
@@ -15,6 +15,10 @@ namespace BIS.Core.Math
             this.quaternion = quaternion;
             this.vector = vector;
         }
+
+        public QuaternionP Quaternion => quaternion;
+
+        public Vector3P Vector => vector;
 
         public static TransformP Read(BinaryReaderEx input)
         {

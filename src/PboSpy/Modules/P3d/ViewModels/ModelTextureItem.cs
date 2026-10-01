@@ -28,7 +28,7 @@ internal class ModelTextureItem : PropertyChangedBase
     public string Key => TextureResolver.Normalize(Path);
     public string DisplayName { get; }
     public int Triangles { get; set; }
-    public bool CanPick => !string.IsNullOrWhiteSpace(Path) && !TextureResolver.IsProcedural(Path);
+    public bool CanPick => !string.IsNullOrWhiteSpace(Path) && (!TextureResolver.IsProcedural(Path) || TextureResolver.IsInvisible(Path));
 
     public BitmapSource Thumb { get => _thumb; set => Set(ref _thumb, value); }
     public Brush Swatch { get => _swatch; set => Set(ref _swatch, value); }

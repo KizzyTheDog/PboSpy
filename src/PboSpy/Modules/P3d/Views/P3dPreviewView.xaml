@@ -32,6 +32,8 @@
                     <RadioButton x:Name="ShadeRendered" GroupName="Shading" Style="{StaticResource PboSpy.Button}" Content="{loc:Tr P3dView.Rendered}" Checked="OnShading"
                                  ToolTip="{loc:Tr P3dView.DetailMapsTip}"/>
                 </StackPanel>
+                <ToggleButton x:Name="DenseToggle" Style="{StaticResource PboSpy.Button}" Content="{loc:Tr P3dView.Dense}" Click="OnDense"
+                              ToolTip="{loc:Tr P3dView.DenseTip}" Visibility="Collapsed" Margin="0 0 14 0"/>
                 <Button Content="{loc:Tr P3dView.ResetView}" Style="{StaticResource PboSpy.Button}" Click="OnResetView" Margin="0 0 6 0"/>
                 <Button Content="{loc:Tr P3dView.TextureFolder}" Style="{StaticResource PboSpy.Button}" Click="OnPickFolder"
                         ToolTip="{loc:Tr P3dView.TextureFolderTip}"/>
@@ -51,7 +53,7 @@
 
             <Border x:Name="ViewHost" Background="{DynamicResource PboSpy.Deep}" ClipToBounds="True" Focusable="True"
                     MouseDown="OnViewMouseDown" MouseMove="OnViewMouseMove" MouseUp="OnViewMouseUp" MouseWheel="OnViewMouseWheel"
-                    LostMouseCapture="OnViewLostCapture">
+                    LostMouseCapture="OnViewLostCapture" KeyDown="OnViewKeyDown" KeyUp="OnViewKeyUp">
                 <Grid>
                     <Viewport3D x:Name="Viewport" IsHitTestVisible="False" RenderOptions.EdgeMode="Unspecified">
                         <Viewport3D.Camera>
@@ -64,15 +66,18 @@
                                     <DirectionalLight x:Name="HeadLight" Color="#FFE0E0E0" Direction="0 -0.3 -1"/>
                                     <DirectionalLight Color="#FF3C3C3C" Direction="0.3 -1 0.4"/>
                                     <Model3DGroup x:Name="Parts"/>
-                                    <Model3DGroup x:Name="Wires"/>
                                 </Model3DGroup>
                             </ModelVisual3D.Content>
                         </ModelVisual3D>
                     </Viewport3D>
+                    <Image x:Name="WireImage" Stretch="None" HorizontalAlignment="Left" VerticalAlignment="Top" IsHitTestVisible="False"
+                           Visibility="Collapsed" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
                     <TextBlock x:Name="Overlay" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14"
                                Foreground="{DynamicResource PboSpy.TextDim}" TextWrapping="Wrap" TextAlignment="Center" Margin="20"/>
                     <TextBlock Text="{loc:Tr P3dView.Hint}" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10 0 10 8"
                                FontSize="11" Foreground="{DynamicResource PboSpy.TextDim}" IsHitTestVisible="False"/>
+                    <TextBlock x:Name="WalkText" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="10 8" FontSize="12"
+                               Foreground="{DynamicResource PboSpy.Text}" IsHitTestVisible="False" TextWrapping="Wrap" TextAlignment="Center"/>
                     <TextBlock x:Name="PerfText" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="10 0 10 8"
                                FontSize="11" FontFamily="Consolas" TextAlignment="Right" Foreground="{DynamicResource PboSpy.TextDim}" IsHitTestVisible="False"/>
                 </Grid>

@@ -132,3 +132,19 @@
 - **Placeholders the game draws as nothing** (`empty`, `clear_empty`, the clan logo slot `bis_klan`) are hidden in the preview and left out of exports, instead of showing as missing.
 - MCP `p3d_export` takes a model inside a PBO (`entry`) and reports which textures and maps it found.
 - Checked: C-130J 17/17, CCA 26/26, Chinook from the PBO 48/48 and from the folder 48/48.
+
+## Unreleased (after 2.1.5)
+
+- **Wireframe like Blender's X-ray**: drawn as a 2D overlay, faces invisible, every edge once as a 1 px line, overlaps brighter; redrawn at most once per frame. **Dense areas** button colours edges by triangle size.
+- **Decals**: see-through textures no longer get a borrowed shine map (that painted their backgrounds grey). Plain white placeholder slots (decals, tail numbers filled in by scripts) are hidden like in game.
+- **Pick from unused textures…** in a texture's menu: searchable list with thumbnails of textures near the model it doesn't use yet. Works on placeholder slots too; picks can point inside PBOs.
+- **Walk navigation** (Shift+`): WASD/arrows, Q/E, mouse look, Shift/Alt speed, wheel; click/Enter keeps, Esc/right click goes back.
+- No up/down limit when orbiting; panning follows the camera's up direction.
+- **Export**: "Split" (on), "One object per material" (on) and "Decimate to N%" (off, meshoptimizer) at the top of the export window; MCP `p3d_export` gets `decimate` and `by_material`.
+- **Find in scripts** (Ctrl+F outside a script, Tools menu): searches every script and config in the opened PBOs and folders, click to open at the line.
+- **Explorer outline**: .p3d files expand into their LODs and meshes (texture, material, triangles), loaded on expand; double click opens that LOD.
+- **RTM preview**: Animation tab plays it on the game's body (read from your Arma 3 install) with a dropdown of every .rtm in the folder; Details tab lists bones, frames and times. Binarised playback is still wrong on the arms (the format's convention isn't documented).
+- **texHeaders.bin** shows as a readable table (size, format, mipmaps, alpha, average colour, path).
+- Volume slider: 0–200%, mark at 100% that it snaps to, shows the percentage, remembered between files.
+- Checked: export in Blender (CCA 50% decimate: 112k tris, 7 joined objects all under 20k, 28/28 textured; FBX multi-material works). Not yet checked in the app: wireframe, walk, find, outline, picker.
+- Removed: the GPU texture wireframe (WireMesh/WireLines/WireFill) and the 90° orbit limit.

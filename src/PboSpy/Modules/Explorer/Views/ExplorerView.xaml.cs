@@ -177,6 +177,14 @@ public partial class ExplorerView : UserControl
         }
     }
 
+    private void OnItemExpanded(object sender, RoutedEventArgs e)
+    {
+        if ((e.OriginalSource as TreeViewItem)?.ItemsSource is Models.LazyNodes nodes)
+        {
+            nodes.Load();
+        }
+    }
+
     private async void OnTreeKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
     {
         if (e.Key == System.Windows.Input.Key.F2 && ViewModel != null)

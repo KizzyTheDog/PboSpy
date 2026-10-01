@@ -1,4 +1,4 @@
-﻿using PboSpy.Interfaces;
+using PboSpy.Interfaces;
 using System.Globalization;
 using System.IO;
 using System.Windows.Data;
@@ -29,7 +29,14 @@ internal class TreeItemToIconConverter : IValueConverter
 
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        ITreeItem treeItem = (ITreeItem)value;
+        if (value is Models.OutlineNode node)
+        {
+            return node.Icon ?? _fileIcon;
+        }
+        if (value is not ITreeItem treeItem)
+        {
+            return _fileIcon;
+        }
 
         var extension = Path.GetExtension(treeItem.Name).ToLowerInvariant();
 

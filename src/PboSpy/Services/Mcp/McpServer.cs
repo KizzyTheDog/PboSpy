@@ -53,7 +53,9 @@ public static class McpServer
         new("p3d_export", "Export a model (first visual LOD, proxy triangles left out) as a textured GLB with PBR materials, or OBJ + MTL + PNGs. Textures are found in the folders around the model and the texture folder set in PboSpy.",
             Schema(("input", "string", "Full path of the .p3d, or of the PBO holding it", true), ("entry", "string", "Path of the model inside the PBO", false), ("output", "string", "Full path of the .glb, .gltf, .fbx or .obj to write", true),
                 ("max_texture", "integer", "Largest texture side in pixels (default 2048)", false), ("split_at", "integer", "Cut parts with more triangles than this, e.g. 20000 for Roblox (default off)", false),
-                ("rvmat_folder", "string", "Extra folder to look for .rvmat files in", false)),
+                ("rvmat_folder", "string", "Extra folder to look for .rvmat files in", false),
+                ("decimate", "number", "Share of triangles to keep, 0.05 to 1 (default 1 = no decimation)", false),
+                ("by_material", "boolean", "One object per material (default true); false joins them", false)),
             P3dExport),
         new("p3d_extract_model_cfg", "Rebuild a model.cfg (skeleton and animations) from a binarised model.",
             Schema(("input", "string", "Full path of the .p3d", true), ("output", "string", "Folder to write to", true)),
@@ -480,7 +482,8 @@ public static class McpServer
         };
         var maxTexture = args["max_texture"]?.GetValue<int>() ?? 2048;
         var splitAt = args["split_at"]?.GetValue<int>() ?? 0;
-        PboSpy.Modules.P3d.Scene.ModelExport.Write(output, mesh.Parts, resolver, maxTexture, splitAt);
+        var decimate = Math.Clamp(args["decimate"]?.GetValue<double>() ?? 1, 0.05, 1);
+        PboSpy.Modules.P3d.Scene.ModelExport.Write(output, mesh.Parts, resolver, maxTexture, splitAt, decimate, args["by_material"]?.GetValue<bool>() ?? true);
         var report = mesh.Parts.Where(p => !string.IsNullOrWhiteSpace(p.Texture)).GroupBy(p => p.Texture, StringComparer.OrdinalIgnoreCase)
             .Select(g => (g.Key, Found: resolver.Resolve(g.Key, 16).Found, Maps: resolver.ResolveLinked(g.Key, g.First().Material, 16).Summary, g.First().Material))
             .ToList();

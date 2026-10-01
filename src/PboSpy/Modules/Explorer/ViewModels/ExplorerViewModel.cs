@@ -1,4 +1,4 @@
-﻿using Gemini.Modules.Shell.Commands;
+using Gemini.Modules.Shell.Commands;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using PboSpy.Interfaces;
 using PboSpy.Localization;
@@ -581,8 +581,13 @@ public partial class ExplorerViewModel : Tool, IPboExplorer, ITreeSelectionHost,
         FilterVersion++;
     }
 
-    public async Task OpenPreview(ITreeItem item)
+    public async Task OpenPreview(object item)
     {
+        if (item is Models.OutlineNode { File: not null } node)
+        {
+            await OpenOutline(node);
+            return;
+        }
         if (item != SelectedItem)
         {
             return; // Handle bubbling
@@ -593,6 +598,19 @@ public partial class ExplorerViewModel : Tool, IPboExplorer, ITreeSelectionHost,
             _previewDelay?.Cancel();
             await _previewManager.ShowPreview(file, pin: true, activate: true);
         }
+    }
+
+    // Opens the model on that LOD, with the mesh's texture first in the list.
+    private async Task OpenOutline(Models.OutlineNode node)
+    {
+        await _previewManager.ShowPreview(node.File, pin: true, activate: true);
+        var preview = IoC.Get<IShell>().Documents.OfType<P3d.ViewModels.P3dPreviewViewModel>().FirstOrDefault(d => d.Model == node.File);
+        if (preview == null)
+        {
+            return;
+        }
+        preview.FocusTexture = node.Texture;
+        preview.SelectedLod = preview.ModelLods.FirstOrDefault(l => l.Index == node.LodIndex) ?? preview.SelectedLod;
     }
 
     private CancellationTokenSource _previewDelay;

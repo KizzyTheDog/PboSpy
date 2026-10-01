@@ -1,4 +1,4 @@
-﻿using BIS.Core.Math;
+using BIS.Core.Math;
 using BIS.Core.Streams;
 using System;
 using System.Linq;
@@ -19,6 +19,11 @@ namespace BIS.RTM
         public AnimKeyStone[] AnimKeyStones { get; private set; }
         public float[] PhaseTimes { get; private set; }
         public TransformP[][] Phases { get; private set; }
+
+        public RTMB(System.IO.Stream stream)
+        {
+            Read(new BinaryReaderEx(stream));
+        }
 
         private void Read(BinaryReaderEx input)
         {

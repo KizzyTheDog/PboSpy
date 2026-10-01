@@ -38,6 +38,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="GeminiWpf" Version="1.0.60-beta" />
+		<PackageReference Include="Meshoptimizer.NET" Version="1.0.7" />
 		<Using Include="System.ComponentModel.Composition" />
 		<Using Include="Caliburn.Micro" />
 		<Using Include="Gemini.Framework" />
@@ -73,6 +74,7 @@
 		<ProjectReference Include="..\..\libs\bis-file-formats\BIS.PAA.Encoder\BIS.PAA.Encoder.csproj" />
 		<ProjectReference Include="..\..\libs\bis-file-formats\BIS.PBO\BIS.PBO.csproj" />
 		<ProjectReference Include="..\..\libs\bis-file-formats\BIS.WRP\BIS.WRP.csproj" />
+		<ProjectReference Include="..\..\libs\bis-file-formats\BIS.RTM\BIS.RTM.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

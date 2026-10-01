@@ -55,7 +55,9 @@
             <CheckBox IsChecked="{Binding Loop}" Content="{loc:Tr Audio.Loop}" VerticalAlignment="Center" Margin="6 0"
                       Foreground="{DynamicResource TreeViewItem.Static.Text}"/>
             <TextBlock Text="{loc:Tr Audio.Volume}" VerticalAlignment="Center" Margin="12 0 6 0"/>
-            <Slider Width="120" Minimum="0" Maximum="1" Value="{Binding Volume}" VerticalAlignment="Center"/>
+            <Slider Width="160" Minimum="0" Maximum="2" Value="{Binding Volume}" VerticalAlignment="Center"
+                    Ticks="1" TickPlacement="BottomRight" SmallChange="0.05" LargeChange="0.1" ToolTip="{loc:Tr Audio.VolumeTip}"/>
+            <TextBlock Text="{Binding VolumeText}" VerticalAlignment="Center" MinWidth="40" Margin="6 0 0 0"/>
             <Button cal:Message.Attach="SaveAs" Content="{loc:Tr Audio.SaveAs}" Padding="14 4" Margin="16 0 0 0"/>
         </StackPanel>
     </Grid>

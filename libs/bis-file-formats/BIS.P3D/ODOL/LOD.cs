@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -160,7 +160,7 @@ namespace BIS.P3D.ODOL
         public TrackedArray<Vector3P> Vertices { get; }
         public uint Unknown { get; }
         public byte Unknown68 { get; }
-		internal TrackedArray<AnimationRTWeight> VertexBoneRef { get; }
+		public TrackedArray<AnimationRTWeight> VertexBoneRef { get; }
 		internal TrackedArray<VertexNeighborInfo> NeighborBoneRef { get; }
 
 		IEnumerable<Tuple<string, string>> ILevelOfDetail.NamedProperties => NamedProperties.AsEnumerable();

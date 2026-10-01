@@ -1,8 +1,8 @@
-﻿using BIS.Core.Streams;
+using BIS.Core.Streams;
 
 namespace BIS.P3D.ODOL
 {
-    internal class AnimationRTWeight
+    public class AnimationRTWeight
     {
         public AnimationRTWeight(BinaryReaderEx input)
         {

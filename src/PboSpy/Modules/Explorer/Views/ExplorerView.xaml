@@ -5,12 +5,14 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:cal="http://caliburnmicro.com"
              xmlns:converters="clr-namespace:PboSpy.Modules.Explorer.Converters"
+             xmlns:models="clr-namespace:PboSpy.Modules.Explorer.Models"
              xmlns:behaviors="clr-namespace:PboSpy.Modules.Explorer.Behaviors"
              xmlns:loc="clr-namespace:PboSpy.Localization"
              mc:Ignorable="d"
              d:DesignHeight="450" d:DesignWidth="320">
     <UserControl.Resources>
         <converters:TreeItemToIconConverter x:Key="IconConverter"/>
+        <models:TreeChildrenConverter x:Key="ChildrenConverter"/>
         <converters:TreeItemSelectedConverter x:Key="SelectedConverter"/>
         <converters:TreeItemSelectableConverter x:Key="SelectableConverter"/>
         <converters:TreeItemVisibilityConverter x:Key="VisibilityConverter"/>
@@ -120,7 +122,7 @@
             </Grid>
         </DockPanel>
 
-        <TreeView Grid.Row="2" x:Name="Items" PreviewKeyDown="OnTreeKeyDown"
+        <TreeView Grid.Row="2" x:Name="Items" PreviewKeyDown="OnTreeKeyDown" TreeViewItem.Expanded="OnItemExpanded"
                   behaviors:TreeMultiSelect.Host="{Binding}"
                   cal:Message.Attach="[SelectedItemChanged] = [Action OnSelectedItemChanged($eventArgs)]">
             <TreeView.Resources>
@@ -195,7 +197,7 @@
             </TreeView.ItemContainerStyle>
 
             <TreeView.ItemTemplate>
-                <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                <HierarchicalDataTemplate ItemsSource="{Binding ., Converter={StaticResource ChildrenConverter}}">
                     <Border x:Name="Row" CornerRadius="2" Padding="2 1" BorderThickness="1" BorderBrush="Transparent" Background="Transparent">
                         <StackPanel Orientation="Horizontal">
                             <Image Source="{Binding ., Mode=OneWay, Converter={StaticResource IconConverter}}" Width="16" Height="16" Margin="0 0 4 0"/>

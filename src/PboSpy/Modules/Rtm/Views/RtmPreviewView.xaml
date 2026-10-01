@@ -1,0 +1,69 @@
+<UserControl x:Class="PboSpy.Modules.Rtm.Views.RtmPreviewView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="clr-namespace:PboSpy.Localization"
+             Background="{DynamicResource PboSpy.Surface}">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+
+        <DockPanel Margin="8 6" LastChildFill="True">
+            <RadioButton GroupName="RtmMode" Style="{StaticResource PboSpy.Button}" Content="{loc:Tr Rtm.Animation}"
+                         IsChecked="{Binding ShowAnimation, Mode=TwoWay}"/>
+            <RadioButton GroupName="RtmMode" Style="{StaticResource PboSpy.Button}" Content="{loc:Tr P3dView.Details}" Margin="4 0 16 0"
+                         IsChecked="{Binding ShowDetails, Mode=TwoWay}"/>
+            <StackPanel Orientation="Horizontal" Visibility="{Binding ShowAnimation, Converter={StaticResource BoolToVis}}">
+                <ComboBox x:Name="Picker" ItemsSource="{Binding Choices}" SelectedItem="{Binding Selected}" MinWidth="240" MaxWidth="420"
+                          SelectionChanged="OnPick" ToolTip="{loc:Tr Rtm.PickTip}"/>
+                <ToggleButton x:Name="PlayButton" Style="{StaticResource PboSpy.Button}" Content="{loc:Tr Rtm.Play}" Margin="8 0 0 0"
+                              IsChecked="True" Click="OnPlay"/>
+                <Button Style="{StaticResource PboSpy.Button}" Content="{loc:Tr P3dView.ResetView}" Margin="6 0 0 0" Click="OnReset"/>
+            </StackPanel>
+            <Slider x:Name="PhaseSlider" Minimum="0" Maximum="1" VerticalAlignment="Center" Margin="12 0 0 0"
+                    Visibility="{Binding ShowAnimation, Converter={StaticResource BoolToVis}}"
+                    PreviewMouseDown="OnScrub" ValueChanged="OnPhase"/>
+        </DockPanel>
+
+        <Border Grid.Row="1" x:Name="ViewHost" Background="{DynamicResource PboSpy.Deep}" ClipToBounds="True"
+                Visibility="{Binding ShowAnimation, Converter={StaticResource BoolToVis}}"
+                MouseDown="OnMouseDown" MouseMove="OnMouseMove" MouseUp="OnMouseUp" MouseWheel="OnWheel">
+            <Grid>
+                <Viewport3D IsHitTestVisible="False">
+                    <Viewport3D.Camera>
+                        <PerspectiveCamera x:Name="Camera" FieldOfView="45" UpDirection="0 1 0"/>
+                    </Viewport3D.Camera>
+                    <ModelVisual3D>
+                        <ModelVisual3D.Content>
+                            <Model3DGroup>
+                                <AmbientLight Color="#FF707070"/>
+                                <DirectionalLight x:Name="HeadLight" Color="#FFE0E0E0" Direction="0 -0.3 -1"/>
+                                <GeometryModel3D x:Name="Body">
+                                    <GeometryModel3D.Material>
+                                        <DiffuseMaterial Brush="#FFAAAAAA"/>
+                                    </GeometryModel3D.Material>
+                                    <GeometryModel3D.BackMaterial>
+                                        <DiffuseMaterial Brush="#FFAAAAAA"/>
+                                    </GeometryModel3D.BackMaterial>
+                                </GeometryModel3D>
+                            </Model3DGroup>
+                        </ModelVisual3D.Content>
+                    </ModelVisual3D>
+                </Viewport3D>
+                <TextBlock x:Name="Overlay" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" Margin="20"
+                           Foreground="{DynamicResource PboSpy.TextDim}" TextWrapping="Wrap" TextAlignment="Center"/>
+                <TextBlock x:Name="FrameText" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="10 0 10 8" FontSize="11"
+                           FontFamily="Consolas" Foreground="{DynamicResource PboSpy.TextDim}"/>
+            </Grid>
+        </Border>
+
+        <TextBox Grid.Row="1" Text="{Binding Details, Mode=OneWay}" IsReadOnly="True" FontFamily="Consolas" BorderThickness="0"
+                 Background="{DynamicResource PboSpy.Surface}" Foreground="{DynamicResource PboSpy.Text}" Padding="10"
+                 VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
+                 Visibility="{Binding ShowDetails, Converter={StaticResource BoolToVis}}"/>
+    </Grid>
+</UserControl>

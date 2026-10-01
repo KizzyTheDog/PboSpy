@@ -22,7 +22,8 @@ public class AudioPreviewViewModel : PreviewViewModel
     private AudioProcessing.ArraySampleProvider _provider;
     private VolumeSampleProviderWrapper _volumeProvider;
     private double _position;
-    private float _volume = 0.8f;
+    // Shared by every audio tab; 1 = the file as recorded, up to 2x.
+    private static float _volume = 1f;
     private bool _loop;
     private bool _seeking;
 
@@ -60,17 +61,21 @@ public class AudioPreviewViewModel : PreviewViewModel
 
     public double CursorX => Duration > 0 ? Position / Duration : 0;
 
+    public string VolumeText => $"{_volume * 100:0}%";
+
     public float Volume
     {
         get => _volume;
         set
         {
-            _volume = Math.Clamp(value, 0f, 1f);
+            // Snaps to 100% near the mark.
+            _volume = Math.Abs(value - 1f) < 0.06f ? 1f : Math.Clamp(value, 0f, 2f);
             if (_volumeProvider != null)
             {
                 _volumeProvider.Volume = _volume;
             }
             NotifyOfPropertyChange(nameof(Volume));
+            NotifyOfPropertyChange(nameof(VolumeText));
         }
     }
 
