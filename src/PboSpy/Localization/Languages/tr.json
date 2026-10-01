@@ -671,5 +671,6 @@
   "Cmd.TidyScriptTip": "Betiği parantezlere göre girintiler ve dolgu boş satırları kaldırır (yalnızca görünüm, dosya değil).",
   "Workshop.CopyQuestion": "İndirilenler\\PboSpy Workshop içine bir kopya kaydedip onu mu açalım?\n\nEvet: kopyayı aç (bir şey değiştireceksen önerilir).\nHayır: atölye dosyalarının kendisini aç, salt okunur.\n\nDeğişen atölye dosyalarını Steam yeniden indirir; imza denetleyen sunucular değiştirilmiş modları atar.",
   "Workshop.Copying": "Kopyalanıyor…",
-  "Workshop.Copied": "{0} konumuna kopyalandı."
+  "Workshop.Copied": "{0} konumuna kopyalandı.",
+  "Rtm.TexturesTip": "Rig'i oyun dokularıyla göster (Arma 3 kurulumundan okunur)."
 }

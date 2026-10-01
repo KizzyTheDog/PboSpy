@@ -117,7 +117,8 @@ internal sealed class TextureResolver
     private static readonly string[] ColorSuffixes = { "_co", "_ca", "_mc", "_mco", "_dt" };
     private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<PboFile, List<PboEntry>> PboEntries = new();
 
-    private readonly Dictionary<string, FileBase> _byPath = new(StringComparer.OrdinalIgnoreCase);
+    // Concurrent: textures are resolved on several threads, and base-game PBOs are indexed into it on first use.
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<string, FileBase> _byPath = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, FileBase> _byName = new(StringComparer.OrdinalIgnoreCase);
     private readonly List<string> _roots = new();
     private Dictionary<string, string> _folderIndex;
@@ -344,16 +345,24 @@ internal sealed class TextureResolver
     private void IndexGame(string key)
     {
         var segments = key.Split('\\');
-        if (segments.Length < 3 || segments[0] != "a3" || !_gameIndexed.Add(segments[1]))
+        if (segments.Length < 3 || segments[0] != "a3")
         {
             return;
         }
-        var pbo = GameData.Pbo(segments[1]);
-        if (pbo != null)
+        // Other threads wait here until the PBO is fully indexed, instead of searching a half-filled index.
+        lock (_gameIndexed)
         {
-            foreach (var entry in PboEntries.GetValue(pbo, p => p.AllEntries.ToList()))
+            if (!_gameIndexed.Add(segments[1]))
             {
-                _byPath.TryAdd(Normalize(entry.FullPath), entry);
+                return;
+            }
+            var pbo = GameData.Pbo(segments[1]);
+            if (pbo != null)
+            {
+                foreach (var entry in PboEntries.GetValue(pbo, p => p.AllEntries.ToList()))
+                {
+                    _byPath.TryAdd(Normalize(entry.FullPath), entry);
+                }
             }
         }
     }

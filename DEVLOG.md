@@ -2,6 +2,14 @@
 
 Newest first. Each commit adds an entry: what changed, why, and what was checked.
 
+## 2026-10-01 · v2.2.1 · textured rigs, find crash fix
+
+- **Textured rigs** in the RTM preview: each rig shows its game textures (uniform, boots, face), with a Textures toggle in the toolbar (on by default, remembered). Blank slots fall back to the model's own data\<name>_co.paa.
+- **Fixed: Find in scripts crashed PboSpy** as soon as you typed (parallel search set up in the wrong order).
+- **Fixed: base-game textures could go missing** when several were looked up at once (the game PBO index was searched while still being built). Hit the rig's head; could also hit models using a3\ textures.
+- Find results show the last three folders of each path instead of the whole disk path.
+- Checked in test mode: NATO soldier idle fully textured including the head; searching the Chinook config finds 94 results.
+
 ## 2026-10-01 · v2.2.0 · RTM playback fixed
 
 - **RTM playback fixed**: binarised animations are stored per bone relative to the parent, with the rotation conjugated and turned 180° about Y. Found by converting the walk with Mikero's DeRtm and matching every bone; the body, arms and hands now pose correctly.

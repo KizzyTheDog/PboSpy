@@ -118,6 +118,11 @@ internal sealed class RtmRig
     /// <summary>Model space (bounding centre added back), so bone matrices apply directly.</summary>
     public Vector3[] Points { get; private init; }
     public int[] Triangles { get; private init; }
+    public Vector2[] Uvs { get; private init; }
+    /// <summary>Triangles per texture (one entry per section), so the view can give each its own material.</summary>
+    public (string Texture, int[] Triangles)[] Groups { get; private init; }
+    /// <summary>A model the rig came from, so textures are looked up next to it (and in the game).</summary>
+    public FileBase Source { get; private init; }
     public string[] BoneNames { get; private init; }
     public string[] Parents { get; private init; }
     public (int Bone, float Weight)[][] Weights { get; private init; }
@@ -136,6 +141,9 @@ internal sealed class RtmRig
             }
         }
         var points = new List<Vector3>();
+        var uvs = new List<Vector2>();
+        var groups = new List<(string, List<int>)>();
+        FileBase source = null;
         var triangles = new List<int>();
         var weights = new List<(int, float)[]>();
         var bones = new List<string>();
@@ -147,6 +155,7 @@ internal sealed class RtmRig
             {
                 continue;
             }
+            source ??= file;
             P3D model;
             using (var stream = file.GetStream())
             {
@@ -170,18 +179,35 @@ internal sealed class RtmRig
                 }
                 return at;
             }).ToArray();
+            string defaultTexture = null;
             var start = points.Count;
             // ODOL keeps vertices relative to the bounding centre; animations work around the model origin.
             var center = odol.ModelInfo.BoundingCenter.Vector3;
             points.AddRange(lod.Vertices.Select(v => v.Vector3 + center));
+            var uv = lod.UvSets != null && lod.UvSets.Length > 0 ? lod.UvSets[0].GetUV() : null;
+            uvs.AddRange(Enumerable.Range(0, lod.Vertices.Count).Select(i => uv != null && i < uv.Length ? uv[i] : Vector2.Zero));
             // Sections with neither texture nor material are proxy markers (head, weapon, gear slots), never drawn.
-            foreach (var face in lod.Sections.Where(x => x.TextureIndex != -1 || x.MaterialIndex != -1).SelectMany(x => x.GetFaces(lod.Polygons.Faces)))
+            foreach (var section in lod.Sections.Where(x => x.TextureIndex != -1 || x.MaterialIndex != -1))
             {
-                var v = face.VertexIndices;
-                triangles.AddRange(new[] { start + v[0], start + v[2], start + v[1] });
-                if (v.Length == 4)
+                var texture = section.TextureIndex >= 0 && section.TextureIndex < lod.Textures.Length ? lod.Textures[section.TextureIndex] ?? "" : "";
+                // Faces and uniforms set by config leave a blank slot in the model; "data\<model>_co.paa" next to it is the usual default.
+                if (string.IsNullOrWhiteSpace(texture) || TextureResolver.IsInvisible(texture))
                 {
-                    triangles.AddRange(new[] { start + v[0], start + v[3], start + v[2] });
+                    texture = defaultTexture ??= DefaultTexture(path);
+                }
+                var group = groups.FirstOrDefault(g => g.Item1.Equals(texture, StringComparison.OrdinalIgnoreCase)).Item2;
+                if (group == null)
+                {
+                    groups.Add((texture, group = new List<int>()));
+                }
+                foreach (var face in section.GetFaces(lod.Polygons.Faces))
+                {
+                    var v = face.VertexIndices;
+                    var tri = v.Length == 4
+                        ? new[] { start + v[0], start + v[2], start + v[1], start + v[0], start + v[3], start + v[2] }
+                        : new[] { start + v[0], start + v[2], start + v[1] };
+                    triangles.AddRange(tri);
+                    group.AddRange(tri);
                 }
             }
             var refs = lod.VertexBoneRef;
@@ -208,12 +234,19 @@ internal sealed class RtmRig
         {
             return null;
         }
-        var rig = new RtmRig { Points = points.ToArray(), Triangles = triangles.ToArray(), BoneNames = bones.ToArray(), Parents = parents.ToArray(), Weights = weights.ToArray() };
+        var rig = new RtmRig { Points = points.ToArray(), Triangles = triangles.ToArray(), Uvs = uvs.ToArray(), Source = source,
+            Groups = groups.Select(g => (g.Item1, g.Item2.ToArray())).ToArray(), BoneNames = bones.ToArray(), Parents = parents.ToArray(), Weights = weights.ToArray() };
         lock (Loaded)
         {
             Loaded[key] = rig;
         }
         return rig;
+    }
+
+    private static string DefaultTexture(string modelPath)
+    {
+        var candidate = Path.Combine(Path.GetDirectoryName(modelPath.Replace('/', '\\')) ?? "", "data", Path.GetFileNameWithoutExtension(modelPath) + "_co.paa");
+        return File.Exists(candidate) || GameData.Find(candidate) != null ? candidate : "";
     }
 
     /// <summary>Vertices posed by the animation's bone matrices (bones it doesn't move stay put).</summary>

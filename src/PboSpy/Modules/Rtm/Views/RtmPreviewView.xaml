@@ -23,6 +23,8 @@
                 <ComboBox x:Name="RigPicker" MinWidth="150" Margin="8 0 0 0" SelectionChanged="OnRig" ToolTip="{loc:Tr Rtm.RigTip}"/>
                 <ToggleButton x:Name="PlayButton" Style="{StaticResource PboSpy.Button}" Content="{loc:Tr Rtm.Play}" Margin="8 0 0 0"
                               IsChecked="True" Click="OnPlay"/>
+                <ToggleButton x:Name="TexturesButton" Style="{StaticResource PboSpy.Button}" Content="{loc:Tr P3dView.Textures}" Margin="6 0 0 0"
+                              Click="OnTextures" ToolTip="{loc:Tr Rtm.TexturesTip}"/>
                 <Button Style="{StaticResource PboSpy.Button}" Content="{loc:Tr P3dView.ResetView}" Margin="6 0 0 0" Click="OnReset"/>
             </StackPanel>
             <Slider x:Name="PhaseSlider" Minimum="0" Maximum="1" VerticalAlignment="Center" Margin="12 0 0 0"
@@ -43,14 +45,7 @@
                             <Model3DGroup>
                                 <AmbientLight Color="#FF707070"/>
                                 <DirectionalLight x:Name="HeadLight" Color="#FFE0E0E0" Direction="0 -0.3 -1"/>
-                                <GeometryModel3D x:Name="Body">
-                                    <GeometryModel3D.Material>
-                                        <DiffuseMaterial Brush="#FFAAAAAA"/>
-                                    </GeometryModel3D.Material>
-                                    <GeometryModel3D.BackMaterial>
-                                        <DiffuseMaterial Brush="#FFAAAAAA"/>
-                                    </GeometryModel3D.BackMaterial>
-                                </GeometryModel3D>
+                                <Model3DGroup x:Name="BodyGroup"/>
                             </Model3DGroup>
                         </ModelVisual3D.Content>
                     </ModelVisual3D>

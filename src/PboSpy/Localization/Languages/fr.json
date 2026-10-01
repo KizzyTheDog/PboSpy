@@ -671,5 +671,6 @@
   "Cmd.TidyScriptTip": "Réindente le script selon ses accolades et retire les lignes vides de remplissage (l'affichage seulement, pas le fichier).",
   "Workshop.CopyQuestion": "Enregistrer une copie dans Téléchargements\\PboSpy Workshop et ouvrir celle-ci ?\n\nOui : ouvrir la copie (conseillé si vous modifiez quelque chose).\nNon : ouvrir les fichiers du Workshop eux-mêmes, en lecture.\n\nSteam retélécharge les fichiers du Workshop modifiés, et les serveurs qui vérifient les signatures expulsent les mods modifiés.",
   "Workshop.Copying": "Copie…",
-  "Workshop.Copied": "Copié dans {0}."
+  "Workshop.Copied": "Copié dans {0}.",
+  "Rtm.TexturesTip": "Afficher le rig avec ses textures du jeu (lues depuis votre installation d'Arma 3)."
 }

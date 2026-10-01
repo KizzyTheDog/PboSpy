@@ -160,3 +160,11 @@
 - Text RTMs that start with an RTM_MDAT block (as DeRtm writes them) now open.
 - Mikero's free Linux tools (DeRtm etc.) are set up in WSL Ubuntu for checking formats.
 - Checked in test mode: walk on the body and on the NATO soldier rig.
+
+## v2.2.1
+
+- **Textured rigs** in the RTM preview: each rig shows its game textures (uniform, boots, face), with a Textures toggle in the toolbar (on by default, remembered). Blank slots fall back to the model's own data\<name>_co.paa.
+- **Fixed: Find in scripts crashed PboSpy** as soon as you typed (parallel search set up in the wrong order).
+- **Fixed: base-game textures could go missing** when several were looked up at once (the game PBO index was searched while still being built). Hit the rig's head; could also hit models using a3\ textures.
+- Find results show the last three folders of each path instead of the whole disk path.
+- Checked in test mode: NATO soldier idle fully textured including the head; searching the Chinook config finds 94 results.

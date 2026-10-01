@@ -13,7 +13,15 @@ public partial class RtmPreviewView : UserControl
 {
     private RtmRig _rig;
     private RtmAnimation _animation;
-    private MeshGeometry3D _mesh;
+    private readonly List<(string Texture, MeshGeometry3D Mesh, GeometryModel3D Model)> _parts = new();
+    private readonly Dictionary<string, Material> _textures = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly Material Plain = Frozen(new DiffuseMaterial(new SolidColorBrush(Color.FromRgb(0xAA, 0xAA, 0xAA))));
+
+    private static Material Frozen(Material material)
+    {
+        material.Freeze();
+        return material;
+    }
     private readonly System.Diagnostics.Stopwatch _clock = new();
     private double _phase;
     private double _yaw = 200, _pitch = 10, _distance = 3.2;
@@ -93,7 +101,8 @@ public partial class RtmPreviewView : UserControl
         }
         if (_rig == null)
         {
-            Body.Geometry = null;
+            BodyGroup.Children.Clear();
+            _parts.Clear();
             return;
         }
         var low = _rig.Points.Aggregate(System.Numerics.Vector3.Min);
@@ -101,9 +110,19 @@ public partial class RtmPreviewView : UserControl
         _home = new Point3D((low.X + high.X) / 2, (low.Y + high.Y) / 2, -(low.Z + high.Z) / 2);
         _target = _home;
         UpdateCamera();
-        _mesh = new MeshGeometry3D { TriangleIndices = new Int32Collection(_rig.Triangles) };
-        Body.Geometry = _mesh;
+        BodyGroup.Children.Clear();
+        _parts.Clear();
+        var uvs = new PointCollection(_rig.Uvs.Select(u => new Point(u.X, u.Y)));
+        uvs.Freeze();
+        foreach (var (texture, triangles) in _rig.Groups)
+        {
+            var mesh = new MeshGeometry3D { TriangleIndices = new Int32Collection(triangles), TextureCoordinates = uvs };
+            var model = new GeometryModel3D(mesh, Plain) { BackMaterial = Plain };
+            BodyGroup.Children.Add(model);
+            _parts.Add((texture, mesh, model));
+        }
         Show();
+        await LoadTextures();
     }
 
     private async void OnLoaded(object sender, RoutedEventArgs e)
@@ -187,8 +206,63 @@ public partial class RtmPreviewView : UserControl
             positions.Add(new Point3D(p.X, p.Y, -p.Z));
         }
         positions.Freeze();
-        _mesh.Positions = positions;
+        foreach (var part in _parts)
+        {
+            part.Mesh.Positions = positions;
+        }
         FrameText.Text = _animation == null ? "" : $"{_phase * 100:0}%  {_animation.Frames.Length} frames";
+    }
+
+    // The game's own textures for the rig, read from the installed Arma 3 like the model preview does.
+    private async Task LoadTextures()
+    {
+        TexturesButton.IsChecked = AppSettings.Default.RtmTextures;
+        var rig = _rig;
+        var wanted = _parts.Select(p => p.Texture).Where(t => !string.IsNullOrWhiteSpace(t) && !_textures.ContainsKey(t)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        if (wanted.Count > 0 && rig.Source != null)
+        {
+            var found = await Task.Run(() =>
+            {
+                var resolver = new PboSpy.Modules.P3d.Scene.TextureResolver(rig.Source, null);
+                return wanted.AsParallel().Select(t => (t, resolver.Resolve(t, 1024))).ToList();
+            });
+            foreach (var (texture, result) in found)
+            {
+                Material material = result.Image != null ? Frozen(new DiffuseMaterial(Tile(result.Image)))
+                    : result.Color is Color color ? Frozen(new DiffuseMaterial(new SolidColorBrush(color))) : Plain;
+                _textures[texture] = material;
+            }
+        }
+        if (rig == _rig)
+        {
+            ApplyTextures();
+        }
+    }
+
+    private static ImageBrush Tile(System.Windows.Media.Imaging.BitmapSource image)
+    {
+        var brush = new ImageBrush(image) { TileMode = TileMode.Tile, ViewportUnits = BrushMappingMode.Absolute, Viewport = new Rect(0, 0, 1, 1), Stretch = Stretch.Fill };
+        brush.Freeze();
+        return brush;
+    }
+
+    private void ApplyTextures()
+    {
+        foreach (var (texture, _, model) in _parts)
+        {
+            var material = TexturesButton.IsChecked == true && texture != null && _textures.TryGetValue(texture, out var m) ? m : Plain;
+            // Invisible placeholders (empty slots) stay hidden when textured, like in game.
+            var hidden = TexturesButton.IsChecked == true && PboSpy.Modules.P3d.Scene.TextureResolver.IsInvisible(texture);
+            model.Material = hidden ? null : material;
+            model.BackMaterial = hidden ? null : material;
+        }
+    }
+
+    private void OnTextures(object sender, RoutedEventArgs e)
+    {
+        AppSettings.Default.RtmTextures = TexturesButton.IsChecked == true;
+        AppSettings.Default.Save();
+        ApplyTextures();
     }
 
     private void OnReset(object sender, RoutedEventArgs e)

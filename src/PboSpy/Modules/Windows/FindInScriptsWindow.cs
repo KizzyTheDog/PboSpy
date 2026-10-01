@@ -28,7 +28,8 @@ public class FindInScriptsWindow : ToolWindow
 
     private sealed record Hit(FileBase File, string Path, int Line, string Text, string Term)
     {
-        public override string ToString() => $"{Path}:{Line}   {Text}";
+        // The last few folders are enough to tell files apart; full disk paths pushed the matching line off screen.
+        public override string ToString() => $"{string.Join(System.IO.Path.DirectorySeparatorChar, Path.Split('\\').TakeLast(3))}:{Line}   {Text}";
     }
 
     public static void Open()
@@ -100,7 +101,7 @@ public class FindInScriptsWindow : ToolWindow
             await Task.Delay(250, cancel);
             _status.Text = Loc.T("Find.Searching");
             var files = Files(IoC.Get<IFileManager>().FileTree).ToList();
-            var hits = await Task.Run(() => files.AsParallel().WithCancellation(cancel).AsOrdered()
+            var hits = await Task.Run(() => files.AsParallel().AsOrdered().WithCancellation(cancel)
                 .SelectMany(file => Scan(file, term, comparison)).Take(5000).ToList(), cancel);
             _results.ItemsSource = hits;
             _status.Text = Loc.F("Find.Count", hits.Count, hits.Select(h => h.File).Distinct().Count(), files.Count);

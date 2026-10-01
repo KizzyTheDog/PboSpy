@@ -671,5 +671,6 @@
   "Cmd.TidyScriptTip": "按括号重新缩进并删除填充用的空行（仅视图，不改文件）。",
   "Workshop.CopyQuestion": "将副本保存到 下载\\PboSpy Workshop 并改为打开副本？\n\n是：打开副本（如需修改，推荐）。\n否：直接以只读方式打开创意工坊文件。\n\n修改过的创意工坊文件会被 Steam 重新下载，检查签名的服务器会踢出被修改的模组。",
   "Workshop.Copying": "正在复制…",
-  "Workshop.Copied": "已复制到 {0}。"
+  "Workshop.Copied": "已复制到 {0}。",
+  "Rtm.TexturesTip": "以游戏纹理显示骨架模型（从已安装的 Arma 3 读取）。"
 }

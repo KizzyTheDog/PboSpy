@@ -671,5 +671,6 @@
   "Cmd.TidyScriptTip": "Reindenta el script por sus llaves y quita las líneas en blanco de relleno (solo la vista, no el archivo).",
   "Workshop.CopyQuestion": "¿Guardar una copia en Descargas\\PboSpy Workshop y abrirla en su lugar?\n\nSí: abrir la copia (recomendado si vas a cambiar algo).\nNo: abrir los archivos del Workshop, solo lectura.\n\nSteam vuelve a descargar los archivos del Workshop modificados, y los servidores que comprueban firmas expulsan mods modificados.",
   "Workshop.Copying": "Copiando…",
-  "Workshop.Copied": "Copiado en {0}."
+  "Workshop.Copied": "Copiado en {0}.",
+  "Rtm.TexturesTip": "Mostrar el rig con sus texturas del juego (leídas de tu instalación de Arma 3)."
 }
