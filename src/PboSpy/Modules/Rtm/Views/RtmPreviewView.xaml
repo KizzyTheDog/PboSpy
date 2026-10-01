@@ -20,6 +20,7 @@
             <StackPanel Orientation="Horizontal" Visibility="{Binding ShowAnimation, Converter={StaticResource BoolToVis}}">
                 <ComboBox x:Name="Picker" ItemsSource="{Binding Choices}" SelectedItem="{Binding Selected}" MinWidth="240" MaxWidth="420"
                           SelectionChanged="OnPick" ToolTip="{loc:Tr Rtm.PickTip}"/>
+                <ComboBox x:Name="RigPicker" MinWidth="150" Margin="8 0 0 0" SelectionChanged="OnRig" ToolTip="{loc:Tr Rtm.RigTip}"/>
                 <ToggleButton x:Name="PlayButton" Style="{StaticResource PboSpy.Button}" Content="{loc:Tr Rtm.Play}" Margin="8 0 0 0"
                               IsChecked="True" Click="OnPlay"/>
                 <Button Style="{StaticResource PboSpy.Button}" Content="{loc:Tr P3dView.ResetView}" Margin="6 0 0 0" Click="OnReset"/>

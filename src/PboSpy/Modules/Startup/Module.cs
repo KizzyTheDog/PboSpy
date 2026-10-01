@@ -52,7 +52,11 @@ public class Module : ModuleBase
 
     public override void Initialize()
     {
-        _mainWindow.WindowState = AppSettings.Default.OpenMaximized ? WindowState.Maximized : WindowState.Normal;
+        _mainWindow.WindowState = AppSettings.Default.OpenMaximized && !TestMode.On ? WindowState.Maximized : WindowState.Normal;
+        if (_mainWindow is IViewAware aware)
+        {
+            aware.ViewAttached += (_, e) => TestMode.Hide(e.View as Window);
+        }
         _mainWindow.Title = "PboSpy";
         _mainWindow.Icon = new BitmapImage(new("pack://application:,,,/PboSpy;component/Resources/Icons/WindowIcon.png"));
 
@@ -65,7 +69,11 @@ public class Module : ModuleBase
     public override async Task PostInitializeAsync()
     {
         await LoadFromArguments();
-        PboSpy.Services.Updater.CheckOnStartup();
+        if (!TestMode.On)
+        {
+            PboSpy.Services.Updater.CheckOnStartup();
+        }
+        TestMode.Start();
 
         if (AppSettings.Default.ShowStartPage && !Shell.Documents.OfType<IStartPage>().Any())
         {
@@ -97,7 +105,10 @@ public class Module : ModuleBase
         {
             Pbr.Views.PbrMakerWindow.Open();
         }
-        SingleInstance.Listen(paths => _ = AppOpen.Show(paths));
+        if (!TestMode.On)
+        {
+            SingleInstance.Listen(paths => _ = AppOpen.Show(paths));
+        }
         if (args.Contains("--names", StringComparer.OrdinalIgnoreCase))
         {
             foreach (var pbo in _pboManager.FileTree.OfType<Pbo.Models.PboFile>())

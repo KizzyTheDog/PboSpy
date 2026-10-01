@@ -81,7 +81,10 @@ public partial class NameRecoveryWindow : ToolWindow
     private static void Show(NameRecoveryWindow window)
     {
         window.Show();
-        window.Activate();
+        if (!PboSpy.Services.TestMode.On)
+        {
+            window.Activate();
+        }
     }
 
     /// <summary>Asks for an unpacked addon folder.</summary>

@@ -39,7 +39,10 @@ public class FindInScriptsWindow : ToolWindow
             _open.Closed += (_, _) => _open = null;
             _open.Show();
         }
-        _open.Activate();
+        if (!PboSpy.Services.TestMode.On)
+        {
+            _open.Activate();
+        }
         _open._query.Focus();
         _open._query.SelectAll();
     }

@@ -98,7 +98,8 @@ public partial class ExplorerViewModel
                         PboSpy.Modules.P3d.Views.ModelExportWindow.Configure(resolver);
                         PboSpy.Modules.P3d.Scene.ModelExport.Write(Path.Combine(folder, Path.GetFileNameWithoutExtension(file.Name) + extension), mesh.Parts, resolver,
                             PboSpy.Modules.P3d.Views.ModelExportWindow.MaxTexture, PboSpy.Modules.P3d.Views.ModelExportWindow.SplitAt,
-                            PboSpy.Modules.P3d.Views.ModelExportWindow.Keep, PboSpy.Modules.P3d.Views.ModelExportWindow.ByMaterial);
+                            PboSpy.Modules.P3d.Views.ModelExportWindow.Keep, PboSpy.Modules.P3d.Views.ModelExportWindow.ByMaterial,
+                            PboSpy.Modules.P3d.Views.ModelExportWindow.Lods);
                     }
                     catch (Exception ex)
                     {

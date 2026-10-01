@@ -9,7 +9,7 @@ public static class Program
         {
             return Services.Mcp.McpServer.Run();
         }
-        if (Services.SingleInstance.ForwardToRunning(args))
+        if (!Services.TestMode.On && Services.SingleInstance.ForwardToRunning(args))
         {
             return 0;
         }

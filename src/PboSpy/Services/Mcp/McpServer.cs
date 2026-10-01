@@ -55,7 +55,8 @@ public static class McpServer
                 ("max_texture", "integer", "Largest texture side in pixels (default 2048)", false), ("split_at", "integer", "Cut parts with more triangles than this, e.g. 20000 for Roblox (default off)", false),
                 ("rvmat_folder", "string", "Extra folder to look for .rvmat files in", false),
                 ("decimate", "number", "Share of triangles to keep, 0.05 to 1 (default 1 = no decimation)", false),
-                ("by_material", "boolean", "One object per material (default true); false joins them", false)),
+                ("by_material", "boolean", "One object per material (default true); false joins them", false),
+                ("lods", "string", "Also write lower-detail copies, percent of triangles, e.g. \"50,25,10\" (name_lod1, name_lod2...)", false)),
             P3dExport),
         new("p3d_extract_model_cfg", "Rebuild a model.cfg (skeleton and animations) from a binarised model.",
             Schema(("input", "string", "Full path of the .p3d", true), ("output", "string", "Folder to write to", true)),
@@ -483,7 +484,8 @@ public static class McpServer
         var maxTexture = args["max_texture"]?.GetValue<int>() ?? 2048;
         var splitAt = args["split_at"]?.GetValue<int>() ?? 0;
         var decimate = Math.Clamp(args["decimate"]?.GetValue<double>() ?? 1, 0.05, 1);
-        PboSpy.Modules.P3d.Scene.ModelExport.Write(output, mesh.Parts, resolver, maxTexture, splitAt, decimate, args["by_material"]?.GetValue<bool>() ?? true);
+        PboSpy.Modules.P3d.Scene.ModelExport.Write(output, mesh.Parts, resolver, maxTexture, splitAt, decimate, args["by_material"]?.GetValue<bool>() ?? true,
+            PboSpy.Modules.P3d.Views.ModelExportWindow.ParseLods(Text(args, "lods", false)));
         var report = mesh.Parts.Where(p => !string.IsNullOrWhiteSpace(p.Texture)).GroupBy(p => p.Texture, StringComparer.OrdinalIgnoreCase)
             .Select(g => (g.Key, Found: resolver.Resolve(g.Key, 16).Found, Maps: resolver.ResolveLinked(g.Key, g.First().Material, 16).Summary, g.First().Material))
             .ToList();

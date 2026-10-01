@@ -78,7 +78,7 @@
                                FontSize="11" Foreground="{DynamicResource PboSpy.TextDim}" IsHitTestVisible="False"/>
                     <TextBlock x:Name="WalkText" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="10 8" FontSize="12"
                                Foreground="{DynamicResource PboSpy.Text}" IsHitTestVisible="False" TextWrapping="Wrap" TextAlignment="Center"/>
-                    <TextBlock x:Name="PerfText" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="10 0 10 8"
+                    <TextBlock x:Name="PerfText" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="10 8 10 0"
                                FontSize="11" FontFamily="Consolas" TextAlignment="Right" Foreground="{DynamicResource PboSpy.TextDim}" IsHitTestVisible="False"/>
                 </Grid>
             </Border>

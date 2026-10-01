@@ -1,3 +1,4 @@
+using PboSpy.Localization;
 using BIS.Core.Streams;
 using BIS.P3D;
 using BIS.RTM;
@@ -98,82 +99,115 @@ internal sealed class RtmAnimation
 /// <summary>The game's body model with each vertex's bones, used to play animations on.</summary>
 internal sealed class RtmRig
 {
-    public const string BodyPath = @"a3\characters_f\common\basicbody.p3d";
+    /// <summary>Built-in rigs: game character models, each with a head, read from the installed Arma 3.</summary>
+    public static readonly (string Key, string[] Paths)[] BuiltIn =
+    {
+        ("Rtm.Rig.Body", new[] { "a3/characters_f/common/basicbody.p3d", "a3/characters_f/heads/m_white_01.p3d" }),
+        ("Rtm.Rig.Nato", new[] { "a3/characters_f/blufor/b_soldier_01.p3d", "a3/characters_f/heads/m_white_01.p3d" }),
+        ("Rtm.Rig.Csat", new[] { "a3/characters_f/opfor/o_soldier_01.p3d", "a3/characters_f/heads/m_persian_01.p3d" }),
+        ("Rtm.Rig.Civilian", new[] { "a3/characters_f/civil/c_citizen1.p3d", "a3/characters_f/heads/m_greek_01.p3d" }),
+        ("Rtm.Rig.Pilot", new[] { "a3/characters_f/common/pilot_f.p3d", "a3/characters_f/heads/m_african_01.p3d" }),
+    };
 
+    /// <summary>Model space (bounding centre added back), so bone matrices apply directly.</summary>
     public Vector3[] Points { get; private init; }
     public int[] Triangles { get; private init; }
     public string[] BoneNames { get; private init; }
     public string[] Parents { get; private init; }
-    public Vector3 Center { get; private init; }
     public (int Bone, float Weight)[][] Weights { get; private init; }
 
-    private static RtmRig _body;
+    private static readonly Dictionary<string, RtmRig> Loaded = new(StringComparer.OrdinalIgnoreCase);
 
-    public static RtmRig Body()
+    /// <summary>Game paths (a3\...) or files on disk, merged into one rig. Null when none could be read.</summary>
+    public static RtmRig Load(string[] paths)
     {
-        if (_body != null)
+        var key = string.Join("|", paths);
+        lock (Loaded)
         {
-            return _body;
-        }
-        var entry = GameData.Find(BodyPath);
-        if (entry == null)
-        {
-            return null;
-        }
-        P3D model;
-        using (var stream = entry.GetStream())
-        {
-            model = StreamHelper.Read<P3D>(stream);
-        }
-        var odol = model.ODOL;
-        var lod = odol?.Lods.FirstOrDefault();
-        if (lod == null)
-        {
-            return null;
-        }
-        var points = lod.Vertices.Select(v => v.Vector3).ToArray();
-        var triangles = new List<int>();
-        // Sections with neither texture nor material are proxy markers (head, weapon, gear slots), never drawn.
-        foreach (var face in lod.Sections.Where(x => x.TextureIndex != -1 || x.MaterialIndex != -1).SelectMany(x => x.GetFaces(lod.Polygons.Faces)))
-        {
-            var v = face.VertexIndices;
-            triangles.AddRange(new[] { v[0], v[2], v[1] });
-            if (v.Length == 4)
+            if (Loaded.TryGetValue(key, out var hit))
             {
-                triangles.AddRange(new[] { v[0], v[3], v[2] });
+                return hit;
             }
         }
-        var skeleton = odol.ModelInfo.Skeleton?.SkeletonBoneNames ?? Array.Empty<BIS.P3D.ODOL.SkeletonBoneName>();
-        var weights = new (int, float)[points.Length][];
-        var refs = lod.VertexBoneRef;
-        for (var i = 0; i < points.Length; i++)
+        var points = new List<Vector3>();
+        var triangles = new List<int>();
+        var weights = new List<(int, float)[]>();
+        var bones = new List<string>();
+        var parents = new List<string>();
+        foreach (var path in paths)
         {
-            var list = new List<(int, float)>();
-            if (refs != null && i < refs.Count)
+            FileBase file = File.Exists(path) ? new PhysicalFile(path) : GameData.Find(path);
+            if (file == null)
             {
-                var r = refs[i];
-                for (var k = 0; k < Math.Min(r.Count, 4); k++)
+                continue;
+            }
+            P3D model;
+            using (var stream = file.GetStream())
+            {
+                model = StreamHelper.Read<P3D>(stream);
+            }
+            var odol = model.ODOL ?? throw new InvalidOperationException(Loc.T("Rtm.NeedsOdol"));
+            var lod = odol.Lods.FirstOrDefault();
+            if (lod == null)
+            {
+                continue;
+            }
+            var skeleton = odol.ModelInfo.Skeleton?.SkeletonBoneNames ?? Array.Empty<BIS.P3D.ODOL.SkeletonBoneName>();
+            var boneIndex = skeleton.Select(b =>
+            {
+                var at = bones.FindIndex(n => n.Equals(b.BoneName, StringComparison.OrdinalIgnoreCase));
+                if (at < 0)
                 {
-                    var sub = r.Data[k * 2];
-                    if (sub < lod.SubSkeletonsToSkeleton.Length)
-                    {
-                        list.Add((lod.SubSkeletonsToSkeleton[sub], Math.Max(1, (int)r.Data[k * 2 + 1]) / 255f));
-                    }
+                    bones.Add(b.BoneName);
+                    parents.Add(b.ParentBoneName);
+                    at = bones.Count - 1;
+                }
+                return at;
+            }).ToArray();
+            var start = points.Count;
+            // ODOL keeps vertices relative to the bounding centre; animations work around the model origin.
+            var center = odol.ModelInfo.BoundingCenter.Vector3;
+            points.AddRange(lod.Vertices.Select(v => v.Vector3 + center));
+            // Sections with neither texture nor material are proxy markers (head, weapon, gear slots), never drawn.
+            foreach (var face in lod.Sections.Where(x => x.TextureIndex != -1 || x.MaterialIndex != -1).SelectMany(x => x.GetFaces(lod.Polygons.Faces)))
+            {
+                var v = face.VertexIndices;
+                triangles.AddRange(new[] { start + v[0], start + v[2], start + v[1] });
+                if (v.Length == 4)
+                {
+                    triangles.AddRange(new[] { start + v[0], start + v[3], start + v[2] });
                 }
             }
-            var sum = list.Sum(w => w.Item2);
-            weights[i] = list.Select(w => (w.Item1, w.Item2 / sum)).ToArray();
+            var refs = lod.VertexBoneRef;
+            for (var i = 0; i < lod.Vertices.Count; i++)
+            {
+                var list = new List<(int, float)>();
+                if (refs != null && i < refs.Count)
+                {
+                    var r = refs[i];
+                    for (var k = 0; k < Math.Min(r.Count, 4); k++)
+                    {
+                        var sub = r.Data[k * 2];
+                        if (sub < lod.SubSkeletonsToSkeleton.Length && lod.SubSkeletonsToSkeleton[sub] < boneIndex.Length)
+                        {
+                            list.Add((boneIndex[lod.SubSkeletonsToSkeleton[sub]], Math.Max(1, (int)r.Data[k * 2 + 1]) / 255f));
+                        }
+                    }
+                }
+                var sum = list.Sum(w => w.Item2);
+                weights.Add(list.Select(w => (w.Item1, w.Item2 / sum)).ToArray());
+            }
         }
-        return _body = new RtmRig
+        if (triangles.Count == 0)
         {
-            Points = points,
-            Triangles = triangles.ToArray(),
-            BoneNames = skeleton.Select(s => s.BoneName).ToArray(),
-            Parents = skeleton.Select(s => s.ParentBoneName).ToArray(),
-            // ODOL keeps vertices relative to the bounding centre; animations work around the model origin.
-            Center = odol.ModelInfo.BoundingCenter.Vector3,
-            Weights = weights
-        };
+            return null;
+        }
+        var rig = new RtmRig { Points = points.ToArray(), Triangles = triangles.ToArray(), BoneNames = bones.ToArray(), Parents = parents.ToArray(), Weights = weights.ToArray() };
+        lock (Loaded)
+        {
+            Loaded[key] = rig;
+        }
+        return rig;
     }
 
     /// <summary>Vertices posed by the animation's bone matrices (bones it doesn't move stay put).</summary>
@@ -215,7 +249,7 @@ internal sealed class RtmRig
             var p = Vector3.Zero;
             foreach (var (bone, weight) in weights)
             {
-                p += (Vector3.Transform(Points[i] + Center, bone < byBone.Length ? byBone[bone] : Matrix4x4.Identity) - Center) * weight;
+                p += Vector3.Transform(Points[i], bone < byBone.Length ? byBone[bone] : Matrix4x4.Identity) * weight;
             }
             result[i] = p;
         });

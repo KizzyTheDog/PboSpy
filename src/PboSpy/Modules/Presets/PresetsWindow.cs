@@ -120,15 +120,15 @@ public class PresetsWindow : ToolWindow
         {
             new Preset("Presets.OpenPbo", OpenPbo),
             new Preset("Presets.RecoverNames", RecoverNames),
-            new Preset("Presets.Debinarize", () => P3dToolsWindow.Open()),
+            new Preset("Presets.Debinarize", () => RunP3d(P3dAction.Debinarize, "Presets.Debinarize")),
             new Preset("Presets.TexturesToPng", () => Convert(Loc.T("Presets.TexturesToPng"), ImagesToPng)),
             new Preset("Presets.Pbr", () => PbrMakerWindow.Open()),
         }),
         new Category("Presets.Cat.Models", new[]
         {
-            new Preset("Presets.Debinarize", () => P3dToolsWindow.Open()),
-            new Preset("Presets.ModelCfg", () => P3dToolsWindow.Open()),
-            new Preset("Presets.StripProxies", () => P3dToolsWindow.Open()),
+            new Preset("Presets.Debinarize", () => RunP3d(P3dAction.Debinarize, "Presets.Debinarize")),
+            new Preset("Presets.ModelCfg", () => RunP3d(P3dAction.ExtractModelCfg, "Presets.ModelCfg")),
+            new Preset("Presets.StripProxies", () => RunP3d(P3dAction.StripProxies, "Presets.StripProxies")),
             new Preset("Presets.ModelPreview", OpenModel),
         }),
         new Category("Presets.Cat.Textures", new[]
@@ -159,6 +159,21 @@ public class PresetsWindow : ToolWindow
         options.ConvertImagesToPaa = paa;
         options.ConvertAudio = audio;
         options.ConvertConfigs = configs;
+    }
+
+    // Asks for a model or a folder of models, then P3D Tools starts the action on it straight away.
+    private void RunP3d(P3dAction action, string titleKey)
+    {
+        var folder = MessageBox.Show(this, Loc.T("Presets.FolderQuestion"), Loc.T(titleKey), MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes;
+        var dialog = new CommonOpenFileDialog { IsFolderPicker = folder };
+        if (!folder)
+        {
+            dialog.Filters.Add(new CommonFileDialogFilter("P3D", "*.p3d"));
+        }
+        if (dialog.ShowDialog(this) == CommonFileDialogResult.Ok)
+        {
+            P3dToolsWindow.Open(dialog.FileName, null, action);
+        }
     }
 
     // Files or a folder; whatever is picked opens the Convert window with the preset's options.

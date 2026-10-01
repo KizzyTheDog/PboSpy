@@ -1,5 +1,6 @@
 using PboSpy.Localization;
 using PboSpy.Modules.Rtm.ViewModels;
+using PboSpy.Services;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -30,25 +31,88 @@ public partial class RtmPreviewView : UserControl
 
     private RtmPreviewViewModel ViewModel => DataContext as RtmPreviewViewModel;
 
+    private sealed record RigChoice(string Name, string[] Paths)
+    {
+        public override string ToString() => Name;
+    }
+
+    private bool _fillingRigs;
+
+    private void FillRigs()
+    {
+        _fillingRigs = true;
+        var choices = RtmRig.BuiltIn.Select(r => new RigChoice(Loc.T(r.Key), r.Paths))
+            .Concat(AppSettings.Default.RtmRigs.Where(System.IO.File.Exists).Select(p => new RigChoice(System.IO.Path.GetFileNameWithoutExtension(p), new[] { p })))
+            .Append(new RigChoice(Loc.T("Rtm.AddRig"), null)).ToList();
+        RigPicker.ItemsSource = choices;
+        RigPicker.SelectedItem = choices.FirstOrDefault(c => c.Paths != null && string.Join("|", c.Paths) == AppSettings.Default.RtmRig) ?? choices[0];
+        _fillingRigs = false;
+    }
+
+    private async void OnRig(object sender, SelectionChangedEventArgs e)
+    {
+        if (_fillingRigs || RigPicker.SelectedItem is not RigChoice choice)
+        {
+            return;
+        }
+        if (choice.Paths == null)
+        {
+            var dialog = new Microsoft.Win32.OpenFileDialog { Filter = "P3D|*.p3d", Title = Loc.T("Rtm.AddRig") };
+            if (dialog.ShowDialog(Window.GetWindow(this)) == true && !AppSettings.Default.RtmRigs.Contains(dialog.FileName, StringComparer.OrdinalIgnoreCase))
+            {
+                AppSettings.Default.RtmRigs.Add(dialog.FileName);
+            }
+            if (dialog.FileName.Length > 0)
+            {
+                AppSettings.Default.RtmRig = dialog.FileName;
+            }
+            AppSettings.Default.Save();
+            FillRigs();
+        }
+        else
+        {
+            AppSettings.Default.RtmRig = string.Join("|", choice.Paths);
+            AppSettings.Default.Save();
+        }
+        await LoadRig();
+    }
+
+    private async Task LoadRig()
+    {
+        var paths = (RigPicker.SelectedItem as RigChoice)?.Paths ?? RtmRig.BuiltIn[0].Paths;
+        Overlay.Text = Loc.T("P3dView.Loading");
+        try
+        {
+            _rig = await Task.Run(() => RtmRig.Load(paths));
+            Overlay.Text = _rig == null ? Loc.T("Rtm.NoGame") : "";
+        }
+        catch (Exception ex)
+        {
+            _rig = null;
+            Overlay.Text = ex.Message;
+        }
+        if (_rig == null)
+        {
+            Body.Geometry = null;
+            return;
+        }
+        var low = _rig.Points.Aggregate(System.Numerics.Vector3.Min);
+        var high = _rig.Points.Aggregate(System.Numerics.Vector3.Max);
+        _home = new Point3D((low.X + high.X) / 2, (low.Y + high.Y) / 2, -(low.Z + high.Z) / 2);
+        _target = _home;
+        UpdateCamera();
+        _mesh = new MeshGeometry3D { TriangleIndices = new Int32Collection(_rig.Triangles) };
+        Body.Geometry = _mesh;
+        Show();
+    }
+
     private async void OnLoaded(object sender, RoutedEventArgs e)
     {
         UpdateCamera();
         if (_rig == null)
         {
-            Overlay.Text = Loc.T("P3dView.Loading");
-            _rig = await Task.Run(RtmRig.Body);
-            Overlay.Text = _rig == null ? Loc.T("Rtm.NoGame") : "";
-            if (_rig == null)
-            {
-                return;
-            }
-            var low = _rig.Points.Aggregate(System.Numerics.Vector3.Min);
-            var high = _rig.Points.Aggregate(System.Numerics.Vector3.Max);
-            _home = new Point3D((low.X + high.X) / 2, (low.Y + high.Y) / 2, -(low.Z + high.Z) / 2);
-            _target = _home;
-            UpdateCamera();
-            _mesh = new MeshGeometry3D { TriangleIndices = new Int32Collection(_rig.Triangles) };
-            Body.Geometry = _mesh;
+            FillRigs();
+            await LoadRig();
             await Pick();
         }
         CompositionTarget.Rendering -= OnFrame;

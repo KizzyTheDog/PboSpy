@@ -23,6 +23,8 @@ public class ModelExportWindow : ToolWindow
     private readonly CheckBox _byMaterial = new();
     private readonly CheckBox _decimate = new();
     private readonly TextBox _keep = new() { Width = 50, Margin = new Thickness(8, 0, 4, 0) };
+    private readonly CheckBox _lods = new();
+    private readonly TextBox _lodList = new() { Width = 120, Margin = new Thickness(8, 0, 4, 0) };
     private readonly TextBox _rvmats = new();
     private readonly TextBox _textures = new();
     private readonly TextBlock _status = new() { TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 8, 0, 0) };
@@ -53,6 +55,10 @@ public class ModelExportWindow : ToolWindow
         _decimate.Content = Loc.T("Export.Decimate");
         _decimate.IsChecked = _settings.ModelExportDecimate;
         _keep.Text = _settings.ModelExportKeep.ToString();
+        _lods.Content = Loc.T("Export.Lods");
+        _lods.IsChecked = _settings.ModelExportLods;
+        _lodList.Text = _settings.ModelExportLodList;
+        _lodList.SetBinding(IsEnabledProperty, new System.Windows.Data.Binding(nameof(CheckBox.IsChecked)) { Source = _lods });
         _keep.SetBinding(IsEnabledProperty, new System.Windows.Data.Binding(nameof(CheckBox.IsChecked)) { Source = _decimate });
 
         var grid = new Grid { Margin = new Thickness(14) };
@@ -106,6 +112,11 @@ public class ModelExportWindow : ToolWindow
         decimatePanel.Children.Add(_keep);
         decimatePanel.Children.Add(new TextBlock { Text = "%", VerticalAlignment = VerticalAlignment.Center });
         Row("Export.DecimateLabel", decimatePanel, tip: Loc.T("Export.DecimateTip"));
+        var lodPanel = new StackPanel { Orientation = Orientation.Horizontal };
+        lodPanel.Children.Add(_lods);
+        lodPanel.Children.Add(_lodList);
+        lodPanel.Children.Add(new TextBlock { Text = "%", VerticalAlignment = VerticalAlignment.Center });
+        Row("Export.LodsLabel", lodPanel, tip: Loc.T("Export.LodsTip"));
         Row("Export.Format", _format, tip: Loc.T("Export.FormatTip"));
         Row("Export.MaxTexture", _size, tip: Loc.T("Export.MaxTextureTip"));
         Row("Export.RvmatFolder", _rvmats, Browse(_rvmats), Loc.T("Export.RvmatFolderTip"));
@@ -133,6 +144,8 @@ public class ModelExportWindow : ToolWindow
         _settings.ModelExportSplit = _split.IsChecked == true;
         _settings.ModelExportSplitAt = int.TryParse(_splitAt.Text, out var at) ? at : 20000;
         _settings.ModelExportByMaterial = _byMaterial.IsChecked == true;
+        _settings.ModelExportLods = _lods.IsChecked == true;
+        _settings.ModelExportLodList = _lodList.Text;
         _settings.ModelExportDecimate = _decimate.IsChecked == true;
         _settings.ModelExportKeep = int.TryParse(_keep.Text.Trim('%', ' '), out var keep) ? keep : 50;
         _settings.ModelRvmatFolder = _rvmats.Text.Trim();
@@ -188,4 +201,9 @@ public class ModelExportWindow : ToolWindow
     public static double Keep => AppSettings.Default.ModelExportDecimate ? AppSettings.Default.ModelExportKeep / 100.0 : 1;
 
     public static bool ByMaterial => AppSettings.Default.ModelExportByMaterial;
+
+    public static int[] Lods => AppSettings.Default.ModelExportLods ? ParseLods(AppSettings.Default.ModelExportLodList) : Array.Empty<int>();
+
+    internal static int[] ParseLods(string text) =>
+        (text ?? "").Split(new[] { ',', ';', ' ', '%' }, StringSplitOptions.RemoveEmptyEntries).Select(t => int.TryParse(t, out var p) ? p : 0).Where(p => p is > 0 and < 100).ToArray();
 }

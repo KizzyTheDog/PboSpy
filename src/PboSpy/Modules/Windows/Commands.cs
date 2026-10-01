@@ -171,6 +171,28 @@ public class FindInScriptsCommandHandler : CommandHandlerBase<FindInScriptsComma
     }
 }
 
+[CommandDefinition]
+public class OpenWorkshopCommandDefinition : CommandDefinition
+{
+    public const string CommandName = "Tools.Workshop";
+
+    public override string Name => CommandName;
+
+    public override string Text => Loc.T("Workshop.Title");
+
+    public override string ToolTip => Loc.T("Workshop.Hint");
+}
+
+[CommandHandler]
+public class OpenWorkshopCommandHandler : CommandHandlerBase<OpenWorkshopCommandDefinition>
+{
+    public override Task Run(Command command)
+    {
+        WorkshopWindow.Open();
+        return Task.CompletedTask;
+    }
+}
+
 internal static class MenuDefinitions
 {
     [Export]
@@ -184,6 +206,10 @@ internal static class MenuDefinitions
     [Export]
     public static readonly MenuItemDefinition FindInScriptsMenuItem =
         new CommandMenuItemDefinition<FindInScriptsCommandDefinition>(ToolsWindowsGroup, -2);
+
+    [Export]
+    public static readonly MenuItemDefinition WorkshopMenuItem =
+        new CommandMenuItemDefinition<OpenWorkshopCommandDefinition>(ToolsWindowsGroup, -3);
 
     [Export]
     public static readonly MenuItemDefinition P3dToolsMenuItem =

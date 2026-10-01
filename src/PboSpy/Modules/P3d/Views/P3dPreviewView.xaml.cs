@@ -1,4 +1,4 @@
-﻿using PboSpy.Localization;
+using PboSpy.Localization;
 using PboSpy.Modules.P3d.Scene;
 using PboSpy.Modules.P3d.ViewModels;
 using PboSpy.Services;
@@ -1121,7 +1121,7 @@ public partial class P3dPreviewView : UserControl
         {
             ModelExportWindow.Configure(resolver);
             await Task.Run(() => ModelExport.Write(target, parts, resolver, ModelExportWindow.MaxTexture, ModelExportWindow.SplitAt,
-                ModelExportWindow.Keep, ModelExportWindow.ByMaterial));
+                ModelExportWindow.Keep, ModelExportWindow.ByMaterial, ModelExportWindow.Lods));
             System.Diagnostics.Process.Start("explorer.exe", $"/select,\"{target}\"");
         });
     }

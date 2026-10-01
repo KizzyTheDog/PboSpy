@@ -1,4 +1,4 @@
-﻿using PboSpy.Localization;
+using PboSpy.Localization;
 using Gemini.Modules.CodeEditor;
 using Gemini.Modules.CodeEditor.Views;
 using Microsoft.Win32;
@@ -9,7 +9,7 @@ using System.Windows;
 
 namespace PboSpy.Modules.Preview.ViewModels;
 
-public class TextPreviewViewModel : PreviewViewModel, ICommandHandler<ExtractAsTextCommandDefinition>
+public class TextPreviewViewModel : PreviewViewModel, ICommandHandler<ExtractAsTextCommandDefinition>, ICommandHandler<TidyScriptCommandDefinition>
 {
 
     private readonly LanguageDefinitionManager _languageDefinitionManager;
@@ -87,6 +87,20 @@ public class TextPreviewViewModel : PreviewViewModel, ICommandHandler<ExtractAsT
         }, System.Windows.Threading.DispatcherPriority.Loaded);
     }
 
+    private static readonly HashSet<string> Scripts = new(StringComparer.OrdinalIgnoreCase) { ".sqf", ".sqs", ".fsm", ".hpp", ".h", ".cpp", ".inc", ".ext", ".bin" };
+
+    void ICommandHandler<TidyScriptCommandDefinition>.Update(Command command)
+    {
+        command.Enabled = _view != null && Scripts.Contains(_model.Extension);
+    }
+
+    // Only changes what is shown (and what Extract as text saves), never the file in the PBO.
+    Task ICommandHandler<TidyScriptCommandDefinition>.Run(Command command)
+    {
+        _view.TextEditor.Text = Utils.SqfTidy.Tidy(_view.TextEditor.Text);
+        return Task.CompletedTask;
+    }
+
     void ICommandHandler<ExtractAsTextCommandDefinition>.Update(Command command)
     {
         command.Enabled = true;
@@ -104,7 +118,7 @@ public class TextPreviewViewModel : PreviewViewModel, ICommandHandler<ExtractAsT
 
         if (dlg.ShowDialog() == true)
         {
-            return File.WriteAllTextAsync(dlg.FileName, Text);
+            return File.WriteAllTextAsync(dlg.FileName, _view?.TextEditor.Text ?? Text);
         }
 
         return Task.CompletedTask;

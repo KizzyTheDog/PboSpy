@@ -28,7 +28,7 @@ public static class AppOpen
         await Application.Current.Dispatcher.InvokeAsync(async () =>
         {
             var main = Application.Current.MainWindow;
-            if (main != null)
+            if (main != null && !TestMode.On)
             {
                 if (main.WindowState == WindowState.Minimized)
                 {

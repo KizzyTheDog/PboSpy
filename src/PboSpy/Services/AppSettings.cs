@@ -29,7 +29,7 @@ public sealed class RepathRuleSetting
 public sealed class AppSettings : INotifyPropertyChanged
 {
     public static string Folder =>
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "PboSpy");
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "PboSpy", TestMode.On ? "Test" : "");
 
     private static string FilePath => Path.Combine(Folder, "settings.json");
 
@@ -57,6 +57,8 @@ public sealed class AppSettings : INotifyPropertyChanged
     private bool modelExportDecimate;
     private int modelExportKeep = 50;
     private bool modelExportByMaterial = true;
+    private bool modelExportLods;
+    private string modelExportLodList = "50, 25, 10";
     private int modelExportSplitAt = 20000;
     private string modelRvmatFolder = "";
     private bool autoUpdate = true;
@@ -70,6 +72,10 @@ public sealed class AppSettings : INotifyPropertyChanged
     private string defaultAudioFormat = "Wav";
     private string defaultImageFormat = "Png";
     private List<string> recentFiles = new();
+    private List<string> rtmRigs = new();
+    private string rtmRig = "";
+    private string steamCmdPath = "";
+    private string steamUser = "";
     private List<string> uncheckedExtensions = new();
     private string exportOptionsJson = "";
     private string p3dInput = "";
@@ -108,6 +114,8 @@ public sealed class AppSettings : INotifyPropertyChanged
     public bool ModelExportSplit { get => modelExportSplit; set => Set(ref modelExportSplit, value); }
     public bool ModelExportDecimate { get => modelExportDecimate; set => Set(ref modelExportDecimate, value); }
     public int ModelExportKeep { get => modelExportKeep; set => Set(ref modelExportKeep, Math.Clamp(value, 5, 100)); }
+    public bool ModelExportLods { get => modelExportLods; set => Set(ref modelExportLods, value); }
+    public string ModelExportLodList { get => modelExportLodList; set => Set(ref modelExportLodList, value ?? ""); }
     public bool ModelExportByMaterial { get => modelExportByMaterial; set => Set(ref modelExportByMaterial, value); }
     public int ModelExportSplitAt { get => modelExportSplitAt; set => Set(ref modelExportSplitAt, Math.Max(100, value)); }
     public string ModelRvmatFolder { get => modelRvmatFolder; set => Set(ref modelRvmatFolder, value ?? ""); }
@@ -121,6 +129,12 @@ public sealed class AppSettings : INotifyPropertyChanged
     public int AudioQuality { get => audioQuality; set => Set(ref audioQuality, Math.Clamp(value, 0, 10)); }
     public string DefaultAudioFormat { get => defaultAudioFormat; set => Set(ref defaultAudioFormat, value); }
     public string DefaultImageFormat { get => defaultImageFormat; set => Set(ref defaultImageFormat, value); }
+    /// <summary>Rigs the user added for the animation preview (.p3d files on disk).</summary>
+    public List<string> RtmRigs { get => rtmRigs; set => Set(ref rtmRigs, value ?? new()); }
+    public string SteamCmdPath { get => steamCmdPath; set => Set(ref steamCmdPath, value ?? ""); }
+    /// <summary>Only the account name; steamcmd keeps its own login, PboSpy never handles the password.</summary>
+    public string SteamUser { get => steamUser; set => Set(ref steamUser, value ?? ""); }
+    public string RtmRig { get => rtmRig; set => Set(ref rtmRig, value ?? ""); }
     public List<string> RecentFiles { get => recentFiles; set => Set(ref recentFiles, value ?? new()); }
     public List<string> UncheckedExtensions { get => uncheckedExtensions; set => Set(ref uncheckedExtensions, value ?? new()); }
     public string ExportOptionsJson { get => exportOptionsJson; set => Set(ref exportOptionsJson, value); }

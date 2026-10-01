@@ -654,6 +654,8 @@ internal sealed class TextureResolver
 internal static class GameData
 {
     private static readonly Dictionary<string, PboFile> Pbos = new(StringComparer.OrdinalIgnoreCase);
+    public static string GameFolder => Folder.Value;
+
     private static readonly Lazy<string> Folder = new(() =>
         Microsoft.Win32.Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Bohemia Interactive\ArmA 3", "main", null) as string);
 

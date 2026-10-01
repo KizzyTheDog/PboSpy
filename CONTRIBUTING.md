@@ -20,23 +20,25 @@ Open work, roughly in order. Done items move to [DEVLOG.md](DEVLOG.md) and [CHAN
   - [ ] After converting: delete the originals, or move them into a backup folder that mirrors the structure
   - [ ] Pick which input types each section converts
 - [ ] **Presets**
-  - [ ] Buttons run the action (e.g. Debinarize) instead of only opening the tool
+  - [x] Buttons run the action (e.g. Debinarize) instead of only opening the tool
   - [ ] Presets for more games: Microsoft Flight Simulator 2024 first, others later (each game gets its own category)
 - [ ] **3D preview**
   - [ ] Real normal mapping (needs a DirectX renderer; WPF 3D can't do it, so `_nohq` is baked in as lighting for now)
   - [ ] Use `_as` ambient maps (they use the second UV set)
   - [ ] Keep parsed models/textures on disk so the first open after a restart is fast too
 - [ ] **ImageSharp upgrade** from 2.1.13 (note: v3+ uses the Six Labors Split License)
-- [ ] **Tidy SQF** action: strip the blank lines obfuscators leave, normalise indentation
+- [x] **Tidy SQF** action: strip the blank lines obfuscators leave, normalise indentation (Edit > Tidy script, Ctrl+Shift+T)
 - [ ] **Name recovery**: fewer `unnamed_###` fallbacks; show the new names in the config preview once applied
 
-- [ ] **Wireframe like Blender** (X-ray, 1 px lines) with a "dense areas" heatmap
+- [x] **Wireframe like Blender** (X-ray, 1 px lines) with a "dense areas" heatmap
 - [ ] **Faster loading of huge models** (400 MB+ P3Ds)
+- [x] **Steam Workshop** window: subscribed and steamcmd items, download by link/ID, copy to Downloads before opening
+- [x] **Export**: decimate, one object per material, LOD copies
 
 ### Ideas
 
-- [ ] RTM preview (bones, frames, duration)
-- [ ] Search / diff configs across all opened PBOs
+- [~] RTM preview: details, rigs (built-in and your own); binarised playback still wrong on the arms
+- [x] Search across all opened PBOs (Find in scripts, Ctrl+F); diff still to do
 - [ ] WRP (terrain) info
 - [ ] Signature / bikey checker
 
@@ -45,6 +47,7 @@ Open work, roughly in order. Done items move to [DEVLOG.md](DEVLOG.md) and [CHAN
 - [x] Auto-update end to end (2.1.0 → 2.1.3: downloaded, swapped, restarted)
 - [ ] 3D preview cursor wrap while dragging
 - [ ] Export window (GLB / glTF / FBX / OBJ) from the UI, and importing the results into Roblox Studio
+- [ ] Walk navigation (Shift+`), unused-texture picker, workshop download with steamcmd
 - [ ] Convert window: Add files / Add folder / Remove, "Select the file(s) when done"
 - [ ] Presets window, Hide from the explorer, builder "Delete old ones first"
 - [ ] Translations checked by native speakers

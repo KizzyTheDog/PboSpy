@@ -35,9 +35,13 @@ public class ToolWindow : Window
         {
         }
 
+        TestMode.Hide(this);
         SourceInitialized += (_, _) =>
         {
-            RestorePlacement();
+            if (!TestMode.On)
+            {
+                RestorePlacement();
+            }
             ApplyTitleBar();
         };
         ThemeService.Changed += OnThemeChanged;
@@ -59,14 +63,20 @@ public class ToolWindow : Window
             {
                 existing.WindowState = WindowState.Normal;
             }
-            existing.Activate();
+            if (!PboSpy.Services.TestMode.On)
+            {
+                existing.Activate();
+            }
             return (T)existing;
         }
         var window = create();
         Open[typeof(T)] = window;
         window.Closed += (_, _) => Open.Remove(typeof(T));
         window.Show();
-        window.Activate();
+        if (!PboSpy.Services.TestMode.On)
+        {
+            window.Activate();
+        }
         return window;
     }
 

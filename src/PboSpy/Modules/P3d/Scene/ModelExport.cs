@@ -27,8 +27,14 @@ internal static class ModelExport
     /// decimate (0..1) keeps that share of the triangles. byMaterial false joins parts into as few objects as the split allows.
     /// </summary>
     public static void Write(string target, IReadOnlyList<ModelPart> parts, TextureResolver resolver, int maxSize = 2048, int splitAt = 0,
-        double decimate = 1, bool byMaterial = true)
+        double decimate = 1, bool byMaterial = true, int[] lods = null)
     {
+        // Extra lower-detail copies next to the main file: name_lod1, name_lod2... (percent of the main file's triangles).
+        foreach (var (percent, level) in (lods ?? Array.Empty<int>()).Where(p => p is > 0 and < 100).Select((p, i) => (p, i + 1)))
+        {
+            var lodTarget = Path.Combine(Path.GetDirectoryName(target), $"{Path.GetFileNameWithoutExtension(target)}_lod{level}{Path.GetExtension(target)}");
+            Write(lodTarget, parts, resolver, maxSize, splitAt, decimate * percent / 100.0, byMaterial);
+        }
         Directory.CreateDirectory(Path.GetDirectoryName(target));
         parts = parts.Where(p => !TextureResolver.IsInvisible(p.Texture)).ToList();
         if (decimate < 1)

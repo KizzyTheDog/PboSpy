@@ -1,4 +1,4 @@
-﻿using PboSpy.Modules.Extraction.Commands;
+using PboSpy.Modules.Extraction.Commands;
 
 namespace PboSpy.Modules.Extraction;
 
@@ -24,6 +24,10 @@ internal static class MenuDefinitions
     [Export]
     public static readonly MenuItemDefinition ExtractAsTextMenuItem = new CommandMenuItemDefinition<ExtractAsTextCommandDefinition>(
        EditExtractAsMenuGroup, 0);
+
+    [Export]
+    public static readonly MenuItemDefinition TidyScriptMenuItem = new CommandMenuItemDefinition<TidyScriptCommandDefinition>(
+       EditExtractAsMenuGroup, 5);
 
     [Export]
     public static readonly MenuItemDefinition ExtractAsPngMenuItem = new CommandMenuItemDefinition<ExtractAsPngCommandDefinition>(
