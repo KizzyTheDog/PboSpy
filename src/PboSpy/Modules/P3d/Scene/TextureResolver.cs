@@ -159,8 +159,9 @@ internal sealed class TextureResolver
         }
     }
 
+    // Scrambled names are UTF-8 bytes read as Latin-1: decode before lowercasing, which would corrupt the bytes.
     public static string Normalize(string path) =>
-        (path ?? "").Trim().Replace('/', '\\').TrimStart('\\').ToLowerInvariant();
+        PboSpy.Modules.Deobfuscate.Core.NameRecovery.FixEncoding((path ?? "").Trim()).Replace('/', '\\').TrimStart('\\').ToLowerInvariant();
 
     // Usually #(argb,8,8,3)color(...), but some tools drop the # or change the case.
     public static bool IsProcedural(string path)
@@ -209,6 +210,10 @@ internal sealed class TextureResolver
         }
 
         var key = Normalize(texture);
+        if (IsInvisible(key))
+        {
+            return new TextureResult { Color = Colors.Transparent, Source = TextureSource.Procedural, Location = texture };
+        }
         var keepAlpha = HasAlpha(key);
 
         if (Overrides.TryGetValue(key, out var chosen) && File.Exists(chosen))
@@ -328,21 +333,49 @@ internal sealed class TextureResolver
         return null;
     }
 
-    // Scrambled names are stored as UTF-8 bytes read as Latin-1; once extracted to disk they're real letters,
-    // so both spellings are tried.
-    private TextureResult Locate(string key, string[] variants, int maxSize, bool keepAlpha, bool decode = true)
+    private static readonly Dictionary<string, PboFile> GamePbos = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly Lazy<string> GameFolder = new(() =>
+        Microsoft.Win32.Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Bohemia Interactive\ArmA 3", "main", null) as string);
+
+    // a3\data_f\... lives in the installed game's data_f.pbo (DLCs in their own folders), read from its header only.
+    private readonly HashSet<string> _gameIndexed = new(StringComparer.OrdinalIgnoreCase);
+
+    private void IndexGame(string key)
     {
-        var found = LocateOne(key, variants, maxSize, keepAlpha, decode);
-        var decoded = Normalize(PboSpy.Modules.Deobfuscate.Core.NameRecovery.FixEncoding(key));
-        if (found.Found || found.File != null || !string.IsNullOrEmpty(found.Location) || decoded == key)
+        var segments = key.Split('\\');
+        if (segments.Length < 3 || segments[0] != "a3" || !_gameIndexed.Add(segments[1]) || !Directory.Exists(GameFolder.Value))
         {
-            return found;
+            return;
         }
-        return LocateOne(decoded, variants, maxSize, keepAlpha, decode);
+        PboFile pbo;
+        lock (GamePbos)
+        {
+            if (!GamePbos.TryGetValue(segments[1], out pbo))
+            {
+                try
+                {
+                    var path = Directory.EnumerateFiles(GameFolder.Value, segments[1] + ".pbo", SearchOption.AllDirectories).FirstOrDefault();
+                    pbo = path == null ? null : new PboFile(new BIS.PBO.PBO(path, false));
+                }
+                catch (Exception)
+                {
+                    pbo = null;
+                }
+                GamePbos[segments[1]] = pbo;
+            }
+        }
+        if (pbo != null)
+        {
+            foreach (var entry in PboEntries.GetValue(pbo, p => p.AllEntries.ToList()))
+            {
+                _byPath.TryAdd(Normalize(entry.FullPath), entry);
+            }
+        }
     }
 
-    private TextureResult LocateOne(string key, string[] variants, int maxSize, bool keepAlpha, bool decode)
+    private TextureResult Locate(string key, string[] variants, int maxSize, bool keepAlpha, bool decode = true)
     {
+        IndexGame(key);
         foreach (var candidate in WithVariants(key, variants))
         {
             if (_byPath.TryGetValue(candidate, out var entry))
@@ -493,6 +526,10 @@ internal sealed class TextureResolver
             }
         }
     }
+
+    // Base-game placeholders the game draws as nothing (unused hidden selections, empty clan logo slot).
+    public static bool IsInvisible(string texture) =>
+        Path.GetFileNameWithoutExtension(Normalize(texture)) is "empty" or "empty_ca" or "clear_empty" or "bis_klan";
 
     // Only _ca style textures are meant to be see-through; other suffixes store data in alpha.
     public static bool HasAlpha(string key)

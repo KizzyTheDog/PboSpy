@@ -124,3 +124,11 @@
 - **FPS counter**: listening for frames made WPF redraw non-stop, which cost performance and read about 800 FPS. It now counts only real frames while the camera moves; `*` means the number is from the last movement.
 - **Less stutter**: texture list thumbnails are made once at 64 px in the background (they were full textures scaled on every layout pass). More textures decode in parallel, and the model is built off-screen and added in one go.
 - Checked on cca.p3d: rendered view closed and solid, wireframe with hidden lines.
+
+## v2.1.5
+
+- **Scrambled texture names now match when a model is opened straight from its PBO.** The name was lowercased before being decoded, which corrupted it, so an obfuscated Chinook found only 10 of 48 textures (47 of 48 once extracted). Now 48 of 48. "Show models using this texture" had the same bug.
+- **Base-game textures and materials** (`a3\...`, e.g. glass and light rvmats) are read from your installed Arma 3's PBOs (found through the registry).
+- **Placeholders the game draws as nothing** (`empty`, `clear_empty`, the clan logo slot `bis_klan`) are hidden in the preview and left out of exports, instead of showing as missing.
+- MCP `p3d_export` takes a model inside a PBO (`entry`) and reports which textures and maps it found.
+- Checked: C-130J 17/17, CCA 26/26, Chinook from the PBO 48/48 and from the folder 48/48.

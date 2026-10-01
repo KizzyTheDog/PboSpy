@@ -26,6 +26,7 @@ internal static class ModelExport
     public static void Write(string target, IReadOnlyList<ModelPart> parts, TextureResolver resolver, int maxSize = 2048, int splitAt = 0)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(target));
+        parts = parts.Where(p => !TextureResolver.IsInvisible(p.Texture)).ToList();
         if (splitAt > 0)
         {
             parts = Split(parts, splitAt);

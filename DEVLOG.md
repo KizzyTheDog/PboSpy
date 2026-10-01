@@ -2,6 +2,14 @@
 
 Newest first. Each commit adds an entry: what changed, why, and what was checked.
 
+## 2026-10-01 · v2.1.5 · texture matching fixes
+
+- **Scrambled texture names now match when a model is opened straight from its PBO.** The name was lowercased before being decoded, which corrupted it, so an obfuscated Chinook found only 10 of 48 textures (47 of 48 once extracted). Now 48 of 48. "Show models using this texture" had the same bug.
+- **Base-game textures and materials** (`a3\...`, e.g. glass and light rvmats) are read from your installed Arma 3's PBOs (found through the registry).
+- **Placeholders the game draws as nothing** (`empty`, `clear_empty`, the clan logo slot `bis_klan`) are hidden in the preview and left out of exports, instead of showing as missing.
+- MCP `p3d_export` takes a model inside a PBO (`entry`) and reports which textures and maps it found.
+- Checked: C-130J 17/17, CCA 26/26, Chinook from the PBO 48/48 and from the folder 48/48.
+
 ## 2026-10-01 · v2.1.4 · faster preview, real wireframe, winding fix
 
 - **Triangles were wound backwards** in the preview and exports: mirroring Arma's left-handed Z flips facing, and drawing both sides hid it. Normals pointed inwards too, so lighting (and exported shading) was off. Fixed in the mesh builder.

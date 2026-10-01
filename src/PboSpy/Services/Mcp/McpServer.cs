@@ -51,7 +51,7 @@ public static class McpServer
             Schema(("input", "string", "Full path of the .p3d", true), ("output", "string", "Folder to write to", true)),
             P3dRvmats),
         new("p3d_export", "Export a model (first visual LOD, proxy triangles left out) as a textured GLB with PBR materials, or OBJ + MTL + PNGs. Textures are found in the folders around the model and the texture folder set in PboSpy.",
-            Schema(("input", "string", "Full path of the .p3d", true), ("output", "string", "Full path of the .glb, .gltf, .fbx or .obj to write", true),
+            Schema(("input", "string", "Full path of the .p3d, or of the PBO holding it", true), ("entry", "string", "Path of the model inside the PBO", false), ("output", "string", "Full path of the .glb, .gltf, .fbx or .obj to write", true),
                 ("max_texture", "integer", "Largest texture side in pixels (default 2048)", false), ("split_at", "integer", "Cut parts with more triangles than this, e.g. 20000 for Roblox (default off)", false),
                 ("rvmat_folder", "string", "Extra folder to look for .rvmat files in", false)),
             P3dExport),
@@ -466,12 +466,14 @@ public static class McpServer
     {
         var input = ExistingFile(args, "input");
         var output = Text(args, "output");
-        var file = new PboSpy.Models.PhysicalFile(input);
+        var entryName = Text(args, "entry", false);
+        PboFile pbo = string.IsNullOrEmpty(entryName) ? null : new PboFile(new PBO(input, false));
+        PboSpy.Models.FileBase file = pbo == null ? new PboSpy.Models.PhysicalFile(input) : FindEntry(pbo, entryName);
         var p3d = PboSpy.Modules.P3d.PreviewFactories.Load(file);
         var lod = p3d.LODs.Where(l => l.FaceCount > 0 && BIS.P3D.Resolution.IsVisual(l.Resolution)).OrderBy(l => l.Resolution).FirstOrDefault()
             ?? throw new InvalidOperationException("The model has no visual LOD.");
         var mesh = PboSpy.Modules.P3d.Scene.ModelMeshBuilder.Build(lod);
-        var resolver = new PboSpy.Modules.P3d.Scene.TextureResolver(file, null)
+        var resolver = new PboSpy.Modules.P3d.Scene.TextureResolver(file, pbo == null ? null : new[] { pbo })
         {
             Folder = AppSettings.Default.ModelTextureFolder,
             RvmatFolder = Text(args, "rvmat_folder", false) ?? AppSettings.Default.ModelRvmatFolder
@@ -479,7 +481,14 @@ public static class McpServer
         var maxTexture = args["max_texture"]?.GetValue<int>() ?? 2048;
         var splitAt = args["split_at"]?.GetValue<int>() ?? 0;
         PboSpy.Modules.P3d.Scene.ModelExport.Write(output, mesh.Parts, resolver, maxTexture, splitAt);
-        return $"Written {output} ({mesh.Triangles} triangles, {mesh.Parts.Count} parts, {new FileInfo(output).Length / 1024 / 1024} MB)";
+        var report = mesh.Parts.Where(p => !string.IsNullOrWhiteSpace(p.Texture)).GroupBy(p => p.Texture, StringComparer.OrdinalIgnoreCase)
+            .Select(g => (g.Key, Found: resolver.Resolve(g.Key, 16).Found, Maps: resolver.ResolveLinked(g.Key, g.First().Material, 16).Summary, g.First().Material))
+            .ToList();
+        var missing = report.Where(r => !r.Found).Select(r => r.Key).ToList();
+        var maps = string.Join("\n", report.Where(r => r.Found).Select(r => $"  {r.Key}: {(r.Maps.Length > 0 ? r.Maps : "- " + r.Material)}"));
+        return $"Written {output} ({mesh.Triangles} triangles, {mesh.Parts.Count} parts, {new FileInfo(output).Length / 1024 / 1024} MB)\n" +
+               $"Textures found {report.Count - missing.Count}/{report.Count}" +
+               (missing.Count > 0 ? "\nMissing:\n  " + string.Join("\n  ", missing) : "") + "\nLinked maps:\n" + maps;
     }
 
     private static string P3dModelCfg(JsonObject args, CancellationToken cancel)

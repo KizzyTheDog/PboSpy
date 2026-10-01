@@ -684,7 +684,7 @@ public partial class P3dPreviewView : UserControl
     private bool IsVisible(string texture)
     {
         var key = TextureResolver.Normalize(texture);
-        return (_isolated == null || key == _isolated) && !_hidden.Contains(key);
+        return (_isolated == null || key == _isolated) && !_hidden.Contains(key) && !TextureResolver.IsInvisible(key);
     }
 
     private void ApplyMaterials()
