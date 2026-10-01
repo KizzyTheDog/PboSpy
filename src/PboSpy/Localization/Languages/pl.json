@@ -672,5 +672,8 @@
   "Workshop.CopyQuestion": "Zapisać kopię w Pobrane\\PboSpy Workshop i otworzyć ją zamiast tego?\n\nTak: otwórz kopię (zalecane, jeśli coś zmienisz).\nNie: otwórz pliki Warsztatu, tylko do odczytu.\n\nSteam pobiera ponownie zmienione pliki Warsztatu, a serwery sprawdzające podpisy wyrzucają zmodyfikowane mody.",
   "Workshop.Copying": "Kopiowanie…",
   "Workshop.Copied": "Skopiowano do {0}.",
-  "Rtm.TexturesTip": "Pokaż rig z teksturami z gry (z instalacji Arma 3)."
+  "Rtm.TexturesTip": "Pokaż rig z teksturami z gry (z instalacji Arma 3).",
+  "Rtm.Pause": "Pauza",
+  "Rtm.Loop": "Pętla",
+  "Rtm.LoopTip": "Odtwarzaj animację w kółko; wyłączone zatrzymuje na ostatniej klatce."
 }

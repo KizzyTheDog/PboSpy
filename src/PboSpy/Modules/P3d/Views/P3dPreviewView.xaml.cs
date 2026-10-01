@@ -490,9 +490,11 @@ public partial class P3dPreviewView : UserControl
         {
             var companions = _vm.Companions.ToList();
             var title = _vm.MainName;
+            var clock = System.Diagnostics.Stopwatch.StartNew();
             mesh = await Task.Run(() =>
             {
                 var main = ModelMeshBuilder.Build(lod.Lod);
+                PboSpy.Services.TestMode.Log($"p3d mesh build: {clock.ElapsedMilliseconds} ms");
                 if (companions.Count == 0)
                 {
                     return main;
@@ -516,6 +518,8 @@ public partial class P3dPreviewView : UserControl
         }
 
         _mesh = mesh;
+        var sceneClock = System.Diagnostics.Stopwatch.StartNew();
+        Dispatcher.BeginInvoke(() => PboSpy.Services.TestMode.Log($"p3d scene + first render: {sceneClock.ElapsedMilliseconds} ms"), System.Windows.Threading.DispatcherPriority.ContextIdle);
         SceneRoot.Children.Remove(Parts);
         Parts.Children.Clear();
         _models.Clear();

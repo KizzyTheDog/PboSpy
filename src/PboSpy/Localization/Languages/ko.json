@@ -672,5 +672,8 @@
   "Workshop.CopyQuestion": "다운로드\\PboSpy Workshop에 사본을 저장하고 그 사본을 열까요?\n\n예: 사본 열기(무언가 바꿀 거라면 권장).\n아니요: 창작마당 파일 자체를 읽기 전용으로 열기.\n\n바뀐 창작마당 파일은 Steam이 다시 받고, 서명을 검사하는 서버는 수정된 모드를 킥합니다.",
   "Workshop.Copying": "복사 중…",
   "Workshop.Copied": "{0}에 복사했습니다.",
-  "Rtm.TexturesTip": "리그를 게임 텍스처로 표시합니다(설치된 Arma 3에서 읽음)."
+  "Rtm.TexturesTip": "리그를 게임 텍스처로 표시합니다(설치된 Arma 3에서 읽음).",
+  "Rtm.Pause": "일시 정지",
+  "Rtm.Loop": "반복",
+  "Rtm.LoopTip": "애니메이션을 계속 반복합니다. 끄면 마지막 프레임에서 멈춥니다."
 }

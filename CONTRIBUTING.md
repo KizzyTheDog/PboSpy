@@ -31,7 +31,7 @@ Open work, roughly in order. Done items move to [DEVLOG.md](DEVLOG.md) and [CHAN
 - [ ] **Name recovery**: fewer `unnamed_###` fallbacks; show the new names in the config preview once applied
 
 - [x] **Wireframe like Blender** (X-ray, 1 px lines) with a "dense areas" heatmap
-- [ ] **Faster loading of huge models** (400 MB+ P3Ds)
+- [~] **Faster loading of huge models** (400 MB+ P3Ds): 6.5 s → 4.3 s for 473 MB; next is parsing only the LOD that is shown
 - [x] **Steam Workshop** window: subscribed and steamcmd items, download by link/ID, copy to Downloads before opening
 - [x] **Export**: decimate, one object per material, LOD copies
 

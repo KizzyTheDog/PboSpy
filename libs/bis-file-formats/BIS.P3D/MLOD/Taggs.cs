@@ -1,4 +1,4 @@
-﻿using BIS.Core.Math;
+using BIS.Core.Math;
 using BIS.Core.Streams;
 using System;
 using System.Linq;
@@ -200,12 +200,9 @@ namespace BIS.P3D.MLOD
 
         public void Read(BinaryReaderEx input, int nPoints, int nFaces)
         {
-            Points = new byte[nPoints];
-            for (int index = 0; index < nPoints; ++index)
-                Points[index] = input.ReadByte();
-            Faces = new byte[nFaces];
-            for (int index = 0; index < nFaces; ++index)
-                Faces[index] = input.ReadByte();
+            // One bulk read each: per-byte reads made big models (hundreds of selections x every point) take seconds.
+            Points = input.ReadBytes(nPoints);
+            Faces = input.ReadBytes(nFaces);
         }
         public override void Write(BinaryWriterEx output)
         {
@@ -268,12 +265,8 @@ namespace BIS.P3D.MLOD
 
         public void Read(BinaryReaderEx input, int nPoints, int nFaces)
         {
-            WeightedPoints = new byte[nPoints];
-            for (int index = 0; index < nPoints; ++index)
-                WeightedPoints[index] = input.ReadByte();
-            Faces = new byte[nFaces];
-            for (int index = 0; index < nFaces; ++index)
-                Faces[index] = input.ReadByte();
+            WeightedPoints = input.ReadBytes(nPoints);
+            Faces = input.ReadBytes(nFaces);
         }
 
         public override void Write(BinaryWriterEx output)

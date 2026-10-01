@@ -114,6 +114,16 @@ internal static class TestMode
         }
     }
 
+    /// <summary>Timings and notes for tests, in %TEMP%\PboSpyTest\log.txt (test mode only).</summary>
+    public static void Log(string line)
+    {
+        if (On)
+        {
+            Directory.CreateDirectory(Folder);
+            File.AppendAllText(Path.Combine(Folder, "log.txt"), $"{DateTime.Now:HH:mm:ss.fff} {line}{Environment.NewLine}");
+        }
+    }
+
     private static void Snap()
     {
         var request = Path.Combine(Folder, "snap");

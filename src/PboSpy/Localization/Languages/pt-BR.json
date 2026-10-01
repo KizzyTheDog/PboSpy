@@ -672,5 +672,8 @@
   "Workshop.CopyQuestion": "Salvar uma cópia em Downloads\\PboSpy Workshop e abrir ela?\n\nSim: abrir a cópia (recomendado se for mudar algo).\nNão: abrir os arquivos do Workshop, só leitura.\n\nO Steam baixa de novo arquivos do Workshop alterados, e servidores que verificam assinaturas expulsam mods modificados.",
   "Workshop.Copying": "Copiando…",
   "Workshop.Copied": "Copiado para {0}.",
-  "Rtm.TexturesTip": "Mostrar o rig com as texturas do jogo (lidas da sua instalação do Arma 3)."
+  "Rtm.TexturesTip": "Mostrar o rig com as texturas do jogo (lidas da sua instalação do Arma 3).",
+  "Rtm.Pause": "Pausar",
+  "Rtm.Loop": "Repetir",
+  "Rtm.LoopTip": "Repete a animação sem parar; desligado, para no último quadro."
 }

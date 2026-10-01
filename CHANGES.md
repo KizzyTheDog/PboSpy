@@ -168,3 +168,11 @@
 - **Fixed: base-game textures could go missing** when several were looked up at once (the game PBO index was searched while still being built). Hit the rig's head; could also hit models using a3\ textures.
 - Find results show the last three folders of each path instead of the whole disk path.
 - Checked in test mode: NATO soldier idle fully textured including the head; searching the Chinook config finds 94 results.
+
+## Unreleased (after 2.2.1)
+
+- **Animation preview**: the Play button reads Pause while playing and carries on from where it was; new **Loop** toggle (on by default, remembered); without loop it stops on the last frame.
+- **Faster loading of big models**: MLOD selections are read in one go instead of byte by byte, and models are parsed through a 4 MB buffer. The 473 MB cca_mlod.p3d opens in about 4.3 s instead of 6.5 s.
+- Rig and animation dropdowns are narrower so the toolbar fits smaller windows.
+- Test mode writes load timings to %TEMP%\PboSpyTest\log.txt.
+- Note: broken-looking SQFs in an old renamed extract (pgs_out, 25 Sep) came from a build before the PBO unpacking fix; extracting again gives clean scripts (checked).

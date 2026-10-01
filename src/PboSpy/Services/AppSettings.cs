@@ -75,6 +75,7 @@ public sealed class AppSettings : INotifyPropertyChanged
     private List<string> rtmRigs = new();
     private string rtmRig = "";
     private bool rtmTextures = true;
+    private bool rtmLoop = true;
     private string steamCmdPath = "";
     private string steamUser = "";
     private List<string> uncheckedExtensions = new();
@@ -135,6 +136,7 @@ public sealed class AppSettings : INotifyPropertyChanged
     public string SteamCmdPath { get => steamCmdPath; set => Set(ref steamCmdPath, value ?? ""); }
     /// <summary>Only the account name; steamcmd keeps its own login, PboSpy never handles the password.</summary>
     public string SteamUser { get => steamUser; set => Set(ref steamUser, value ?? ""); }
+    public bool RtmLoop { get => rtmLoop; set => Set(ref rtmLoop, value); }
     public bool RtmTextures { get => rtmTextures; set => Set(ref rtmTextures, value); }
     public string RtmRig { get => rtmRig; set => Set(ref rtmRig, value ?? ""); }
     public List<string> RecentFiles { get => recentFiles; set => Set(ref recentFiles, value ?? new()); }

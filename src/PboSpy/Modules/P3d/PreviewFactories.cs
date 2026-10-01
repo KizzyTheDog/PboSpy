@@ -1,4 +1,5 @@
-﻿using BIS.Core.Streams;
+using System.IO;
+using BIS.Core.Streams;
 using BIS.P3D;
 using PboSpy.Models;
 using PboSpy.Modules.P3d.ViewModels;
@@ -11,7 +12,10 @@ internal static class PreviewFactories
     [ExportMetadata("Extensions", new[] { ".p3d" })]
     public static Document PreviewP3D(FileBase entry)
     {
-        return new P3dPreviewViewModel(entry, Load(entry));
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        var model = Load(entry);
+        PboSpy.Services.TestMode.Log($"p3d parse {entry.Name}: {clock.ElapsedMilliseconds} ms");
+        return new P3dPreviewViewModel(entry, model);
     }
 
     // The last few parsed models, so going back to one (or reopening its tab) skips parsing and mesh building.
@@ -32,7 +36,8 @@ internal static class PreviewFactories
             }
         }
         P3D p3d;
-        using (var stream = entry.GetStream())
+        // The parser reads a few bytes at a time; a big buffer in front of the file makes huge models load ~2x faster.
+        using (var stream = new BufferedStream(entry.GetStream(), 4 << 20))
         {
             p3d = StreamHelper.Read<P3D>(stream);
         }

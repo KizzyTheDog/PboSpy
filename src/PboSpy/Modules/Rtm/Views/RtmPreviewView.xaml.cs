@@ -160,8 +160,18 @@ public partial class RtmPreviewView : UserControl
             Overlay.Text = Loc.F("Rtm.ReadError", ex.Message);
         }
         _phase = 0;
+        _startPhase = 0;
         _clock.Restart();
+        UpdatePlayLabel();
         Show();
+    }
+
+    private double _startPhase;
+
+    private void UpdatePlayLabel()
+    {
+        PlayButton.Content = Loc.T(PlayButton.IsChecked == true ? "Rtm.Pause" : "Rtm.Play");
+        LoopButton.IsChecked = AppSettings.Default.RtmLoop;
     }
 
     private void OnFrame(object sender, EventArgs e)
@@ -172,7 +182,15 @@ public partial class RtmPreviewView : UserControl
         }
         // ponytail: the real speed lives in the config (CfgMovesBasic); about 30 frames per second looks right for most.
         var length = Math.Max(0.6, _animation.Frames.Length / 30.0);
-        _phase = _clock.Elapsed.TotalSeconds / length % 1;
+        var phase = _startPhase + _clock.Elapsed.TotalSeconds / length;
+        if (phase >= 1 && LoopButton.IsChecked != true)
+        {
+            // Without loop it stops on the last frame; Play starts it again from the beginning.
+            phase = 1;
+            PlayButton.IsChecked = false;
+            UpdatePlayLabel();
+        }
+        _phase = phase % 1 == 0 && phase >= 1 ? 1 : phase % 1;
         PhaseSlider.Value = _phase;
     }
 
@@ -185,11 +203,21 @@ public partial class RtmPreviewView : UserControl
     private void OnScrub(object sender, MouseButtonEventArgs e)
     {
         PlayButton.IsChecked = false;
+        UpdatePlayLabel();
     }
 
+    // Carries on from where it is (or from the start once it reached the end).
     private void OnPlay(object sender, RoutedEventArgs e)
     {
+        _startPhase = _phase >= 0.999 ? 0 : _phase;
         _clock.Restart();
+        UpdatePlayLabel();
+    }
+
+    private void OnLoop(object sender, RoutedEventArgs e)
+    {
+        AppSettings.Default.RtmLoop = LoopButton.IsChecked == true;
+        AppSettings.Default.Save();
     }
 
     private void Show()

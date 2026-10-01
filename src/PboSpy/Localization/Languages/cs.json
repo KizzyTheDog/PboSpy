@@ -672,5 +672,8 @@
   "Workshop.CopyQuestion": "Uložit kopii do Stažené soubory\\PboSpy Workshop a otevřít ji?\n\nAno: otevřít kopii (doporučeno, pokud něco změníte).\nNe: otevřít přímo soubory Workshopu, jen pro čtení.\n\nZměněné soubory Workshopu Steam znovu stáhne a servery kontrolující podpisy vyhazují upravené mody.",
   "Workshop.Copying": "Kopíruji…",
   "Workshop.Copied": "Zkopírováno do {0}.",
-  "Rtm.TexturesTip": "Zobrazit rig s herními texturami (z instalace Arma 3)."
+  "Rtm.TexturesTip": "Zobrazit rig s herními texturami (z instalace Arma 3).",
+  "Rtm.Pause": "Pauza",
+  "Rtm.Loop": "Smyčka",
+  "Rtm.LoopTip": "Přehrávat animaci dokola; vypnuto zastaví na posledním snímku."
 }

@@ -2,6 +2,14 @@
 
 Newest first. Each commit adds an entry: what changed, why, and what was checked.
 
+## 2026-10-01 · unreleased · play/pause, loop, faster big models
+
+- **Animation preview**: the Play button reads Pause while playing and carries on from where it was; new **Loop** toggle (on by default, remembered); without loop it stops on the last frame.
+- **Faster loading of big models**: MLOD selections are read in one go instead of byte by byte, and models are parsed through a 4 MB buffer. The 473 MB cca_mlod.p3d opens in about 4.3 s instead of 6.5 s.
+- Rig and animation dropdowns are narrower so the toolbar fits smaller windows.
+- Test mode writes load timings to %TEMP%\PboSpyTest\log.txt.
+- Note: broken-looking SQFs in an old renamed extract (pgs_out, 25 Sep) came from a build before the PBO unpacking fix; extracting again gives clean scripts (checked).
+
 ## 2026-10-01 · v2.2.1 · textured rigs, find crash fix
 
 - **Textured rigs** in the RTM preview: each rig shows its game textures (uniform, boots, face), with a Textures toggle in the toolbar (on by default, remembered). Blank slots fall back to the model's own data\<name>_co.paa.
