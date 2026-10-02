@@ -148,8 +148,12 @@ internal sealed class RtmRig
         var weights = new List<(int, float)[]>();
         var bones = new List<string>();
         var parents = new List<string>();
-        foreach (var path in paths)
+        (BIS.P3D.ODOL.LOD Lod, Vector3 Center, int[] Bones) body = default;
+        foreach (var entry in paths)
         {
+            // "model.p3d?ucp=oefcp" swaps part of the model's texture names, for the camo a loadout uses.
+            var swaps = entry.Split('?', 2).Skip(1).SelectMany(q => q.Split('&')).Select(x => x.Split('=', 2)).Where(x => x.Length == 2).ToList();
+            var path = entry.Split('?')[0];
             FileBase file = File.Exists(path) ? new PhysicalFile(path) : GameData.Find(path);
             if (file == null)
             {
@@ -183,13 +187,28 @@ internal sealed class RtmRig
             var start = points.Count;
             // ODOL keeps vertices relative to the bounding centre; animations work around the model origin.
             var center = odol.ModelInfo.BoundingCenter.Vector3;
-            points.AddRange(lod.Vertices.Select(v => v.Vector3 + center));
+            // A model with no skeleton (a weapon) hangs on the body's weapon proxy and moves with that proxy's bone, as in the game.
+            var place = Matrix4x4.Identity;
+            var attach = bones.FindIndex(n => n.Equals("head", StringComparison.OrdinalIgnoreCase));
+            if (skeleton.Length == 0 && body.Lod != null)
+            {
+                var proxy = body.Lod.Proxies.FirstOrDefault(p => Path.GetFileName(p.ProxyModel.Replace('\\', '/')).StartsWith("weapon", StringComparison.OrdinalIgnoreCase));
+                if (proxy != null)
+                {
+                    place = proxy.Transformation.Matrix * Matrix4x4.CreateTranslation(body.Center);
+                    attach = proxy.BoneIndex >= 0 && proxy.BoneIndex < body.Bones.Length ? body.Bones[proxy.BoneIndex]
+                        : bones.FindIndex(n => n.Equals("weapon", StringComparison.OrdinalIgnoreCase));
+                }
+            }
+            body = body.Lod == null ? (lod, center, boneIndex) : body;
+            points.AddRange(lod.Vertices.Select(v => Vector3.Transform(v.Vector3 + center, place)));
             var uv = lod.UvSets != null && lod.UvSets.Length > 0 ? lod.UvSets[0].GetUV() : null;
             uvs.AddRange(Enumerable.Range(0, lod.Vertices.Count).Select(i => uv != null && i < uv.Length ? uv[i] : Vector2.Zero));
             // Sections with neither texture nor material are proxy markers (head, weapon, gear slots), never drawn.
             foreach (var section in lod.Sections.Where(x => x.TextureIndex != -1 || x.MaterialIndex != -1))
             {
                 var texture = section.TextureIndex >= 0 && section.TextureIndex < lod.Textures.Length ? lod.Textures[section.TextureIndex] ?? "" : "";
+                texture = swaps.Aggregate(texture, (t, x) => t.Replace(x[0], x[1], StringComparison.OrdinalIgnoreCase));
                 // Faces and uniforms set by config leave a blank slot in the model; "data\<model>_co.paa" next to it is the usual default.
                 if (string.IsNullOrWhiteSpace(texture) || TextureResolver.IsInvisible(texture))
                 {
@@ -228,17 +247,16 @@ internal sealed class RtmRig
                     }
                 }
                 // The game hangs a head model on the body's head bone, so its unweighted parts (eyes, teeth) move with it.
-                var head = bones.FindIndex(n => n.Equals("head", StringComparison.OrdinalIgnoreCase));
-                if (list.Count == 0 && file != source && head >= 0)
+                if (list.Count == 0 && file != source && attach >= 0)
                 {
-                    list.Add((head, 1));
+                    list.Add((attach, 1));
                     unweighted++;
                 }
                 var sum = list.Sum(w => w.Item2);
                 weights.Add(list.Select(w => (w.Item1, w.Item2 / sum)).ToArray());
             }
             if (PboSpy.Services.TestMode.On)
-                PboSpy.Services.TestMode.Log($"rig: {path} has {unweighted} vertices without bones, tied to the head");
+                PboSpy.Services.TestMode.Log($"rig: {path} has {unweighted} vertices without bones, tied to bone {attach}");
         }
         if (triangles.Count == 0)
         {

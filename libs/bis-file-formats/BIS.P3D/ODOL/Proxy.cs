@@ -3,7 +3,7 @@ using BIS.Core.Streams;
 
 namespace BIS.P3D.ODOL
 {
-    internal class Proxy
+    public class Proxy
     {
         public Proxy(BinaryReaderEx input, int version)
         {

@@ -131,6 +131,7 @@ internal static class TestMode
                     var output = Path.Combine(Folder, "roblox");
                     Directory.CreateDirectory(output);
                     var rig = Modules.Rtm.RtmRig.Load(Modules.Rtm.RobloxExport.CurrentRig());
+                    Log("roblox: textures " + string.Join(" | ", rig.Groups.Select(g => $"{g.Texture} ({g.Triangles.Length / 3})")));
                     Modules.Rtm.RobloxExport.WriteRig(Path.Combine(output, "rig.fbx"), rig);
                     Modules.Rtm.RobloxExport.WriteAnimation(Path.Combine(output, Path.GetFileNameWithoutExtension(verb[1]) + ".rbxmx"),
                         Modules.Rtm.RtmAnimation.Read(new Models.PhysicalFile(verb[1])), rig);

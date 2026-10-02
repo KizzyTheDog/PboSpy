@@ -344,19 +344,19 @@ internal sealed class TextureResolver
 
     private void IndexGame(string key)
     {
-        var segments = key.Split('\\');
-        if (segments.Length < 3 || segments[0] != "a3")
+        var addon = GameData.Addon(key);
+        if (addon == null)
         {
             return;
         }
         // Other threads wait here until the PBO is fully indexed, instead of searching a half-filled index.
         lock (_gameIndexed)
         {
-            if (!_gameIndexed.Add(segments[1]))
+            if (!_gameIndexed.Add(addon))
             {
                 return;
             }
-            var pbo = GameData.Pbo(segments[1]);
+            var pbo = GameData.Pbo(addon);
             if (pbo != null)
             {
                 foreach (var entry in PboEntries.GetValue(pbo, p => p.AllEntries.ToList()))
@@ -691,10 +691,17 @@ internal static class GameData
         }
     }
 
+    /// <summary>The PBO a game path lives in: a3\&lt;pbo&gt;\... for the game, &lt;mod&gt;\addons\&lt;pbo&gt;\... for mods (found through Arma's !Workshop links).</summary>
+    public static string Addon(string key)
+    {
+        var segments = key.Split('\\');
+        return segments.Length >= 4 && segments[1] == "addons" ? segments[2] : segments.Length >= 3 ? segments[1] : null;
+    }
+
     public static PboEntry Find(string path)
     {
         var key = TextureResolver.Normalize(path);
-        var segments = key.Split('\\');
-        return segments.Length < 3 ? null : Pbo(segments[1])?.AllEntries.FirstOrDefault(e => TextureResolver.Normalize(e.FullPath) == key);
+        var addon = Addon(key);
+        return addon == null ? null : Pbo(addon)?.AllEntries.FirstOrDefault(e => TextureResolver.Normalize(e.FullPath) == key);
     }
 }
