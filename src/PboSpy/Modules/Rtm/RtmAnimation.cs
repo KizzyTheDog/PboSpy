@@ -202,6 +202,8 @@ internal sealed class RtmRig
                 if (proxy != null)
                 {
                     place = proxy.Transformation.Matrix * Matrix4x4.CreateTranslation(body.Center);
+                    if (PboSpy.Services.TestMode.On)
+                        PboSpy.Services.TestMode.Log($"rig: proxy {proxy.ProxyModel} at {proxy.Transformation.Matrix.Translation} bone {proxy.BoneIndex}, body centre {body.Center}, gun centre {center}, gun y {lod.Vertices.Min(v => v.Vector3.Y):0.###}..{lod.Vertices.Max(v => v.Vector3.Y):0.###} z {lod.Vertices.Min(v => v.Vector3.Z):0.###}..{lod.Vertices.Max(v => v.Vector3.Z):0.###}");
                     attach = proxy.BoneIndex >= 0 && proxy.BoneIndex < body.Bones.Length ? body.Bones[proxy.BoneIndex]
                         : bones.FindIndex(n => n.Equals("weapon", StringComparison.OrdinalIgnoreCase));
                 }

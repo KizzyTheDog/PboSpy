@@ -136,6 +136,20 @@ internal static class TestMode
                     Modules.Rtm.RobloxExport.WriteAnimation(Path.Combine(output, Path.GetFileNameWithoutExtension(verb[1]) + ".rbxmx"),
                         Modules.Rtm.RtmAnimation.Read(new Models.PhysicalFile(verb[1])), rig);
                     break;
+                case "pose":
+                    // "pose <phase> <rtm file>": the current rig posed at that phase, as roblox\pose.obj.
+                    var poseArgs = verb[1].Split(' ', 2);
+                    var poseRig = Modules.Rtm.RtmRig.Load(Modules.Rtm.RobloxExport.CurrentRig());
+                    var poseAnimation = Modules.Rtm.RtmAnimation.Read(new Models.PhysicalFile(poseArgs[1]));
+                    var posed = poseRig.Pose(poseAnimation, poseAnimation.Sample(double.Parse(poseArgs[0], System.Globalization.CultureInfo.InvariantCulture)));
+                    var obj = new System.Text.StringBuilder();
+                    foreach (var point in posed)
+                        obj.AppendLine(System.FormattableString.Invariant($"v {point.X} {point.Y} {-point.Z}"));
+                    for (var t = 0; t + 2 < poseRig.Triangles.Length; t += 3)
+                        obj.AppendLine($"f {poseRig.Triangles[t] + 1} {poseRig.Triangles[t + 1] + 1} {poseRig.Triangles[t + 2] + 1}");
+                    Directory.CreateDirectory(Path.Combine(Folder, "roblox"));
+                    File.WriteAllText(Path.Combine(Folder, "roblox", "pose.obj"), obj.ToString());
+                    break;
                 case "window" when verb[1] == "presets":
                     Modules.Presets.PresetsWindow.Open();
                     break;
