@@ -172,6 +172,12 @@ internal sealed class RtmRig
                 continue;
             }
             var skeleton = odol.ModelInfo.Skeleton?.SkeletonBoneNames ?? Array.Empty<BIS.P3D.ODOL.SkeletonBoneName>();
+            // A model that shares no bones with the body (a weapon, with its own bolt and magazine bones or none) is held, not worn.
+            var held = body.Lod != null && !skeleton.Any(b => bones.Contains(b.BoneName, StringComparer.OrdinalIgnoreCase));
+            if (held)
+            {
+                skeleton = Array.Empty<BIS.P3D.ODOL.SkeletonBoneName>();
+            }
             var boneIndex = skeleton.Select(b =>
             {
                 var at = bones.FindIndex(n => n.Equals(b.BoneName, StringComparison.OrdinalIgnoreCase));
@@ -187,10 +193,10 @@ internal sealed class RtmRig
             var start = points.Count;
             // ODOL keeps vertices relative to the bounding centre; animations work around the model origin.
             var center = odol.ModelInfo.BoundingCenter.Vector3;
-            // A model with no skeleton (a weapon) hangs on the body's weapon proxy and moves with that proxy's bone, as in the game.
+            // A held model hangs on the body's weapon proxy and moves with that proxy's bone, as in the game.
             var place = Matrix4x4.Identity;
             var attach = bones.FindIndex(n => n.Equals("head", StringComparison.OrdinalIgnoreCase));
-            if (skeleton.Length == 0 && body.Lod != null)
+            if (held)
             {
                 var proxy = body.Lod.Proxies.FirstOrDefault(p => Path.GetFileName(p.ProxyModel.Replace('\\', '/')).StartsWith("weapon", StringComparison.OrdinalIgnoreCase));
                 if (proxy != null)
@@ -234,7 +240,7 @@ internal sealed class RtmRig
             for (var i = 0; i < lod.Vertices.Count; i++)
             {
                 var list = new List<(int, float)>();
-                if (refs != null && i < refs.Count)
+                if (refs != null && i < refs.Count && !held)
                 {
                     var r = refs[i];
                     for (var k = 0; k < Math.Min(r.Count, 4); k++)

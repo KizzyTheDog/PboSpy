@@ -167,6 +167,23 @@ internal static class RobloxExport
                 return Matrix4x4.CreateTranslation(heads[b]) * s * undo * Matrix4x4.CreateTranslation(-heads[b]);
             }).ToArray();
         }).ToArray();
+        // Vehicle and object animations place the body at the seat; Roblox plays them where the rig stands, so the first
+        // frame's sideways/forward offset comes off every root bone (sitting heights stay).
+        var pelvis = Array.FindIndex(rig.BoneNames, n => n.Equals("pelvis", StringComparison.OrdinalIgnoreCase));
+        if (pelvis >= 0 && poses.Length > 0)
+        {
+            var shift = Matrix4x4.CreateTranslation(-poses[0][pelvis].Translation.X, 0, -poses[0][pelvis].Translation.Z);
+            foreach (var frame in poses)
+            {
+                for (var b = 0; b < frame.Length; b++)
+                {
+                    if (parents[b] < 0)
+                    {
+                        frame[b] *= shift;
+                    }
+                }
+            }
+        }
         // Only bones that move (and the bones above them) get poses, which keeps the file small.
         var keep = new bool[rig.BoneNames.Length];
         for (var b = 0; b < keep.Length; b++)
