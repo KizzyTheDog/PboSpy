@@ -211,6 +211,7 @@ internal sealed class RtmRig
                 }
             }
             var refs = lod.VertexBoneRef;
+            var unweighted = 0;
             for (var i = 0; i < lod.Vertices.Count; i++)
             {
                 var list = new List<(int, float)>();
@@ -226,9 +227,18 @@ internal sealed class RtmRig
                         }
                     }
                 }
+                // The game hangs a head model on the body's head bone, so its unweighted parts (eyes, teeth) move with it.
+                var head = bones.FindIndex(n => n.Equals("head", StringComparison.OrdinalIgnoreCase));
+                if (list.Count == 0 && file != source && head >= 0)
+                {
+                    list.Add((head, 1));
+                    unweighted++;
+                }
                 var sum = list.Sum(w => w.Item2);
                 weights.Add(list.Select(w => (w.Item1, w.Item2 / sum)).ToArray());
             }
+            if (PboSpy.Services.TestMode.On)
+                PboSpy.Services.TestMode.Log($"rig: {path} has {unweighted} vertices without bones, tied to the head");
         }
         if (triangles.Count == 0)
         {
@@ -258,7 +268,11 @@ internal sealed class RtmRig
             lookup.TryAdd(animation.Bones[b], b);
         }
         // Binarised animations are relative to the parent bone; text ones already hold the final matrices.
-        var local = BoneNames.Select(n => lookup.TryGetValue(n, out var b) && b < matrices.Length ? matrices[b] : Matrix4x4.Identity).ToArray();
+        // ponytail: body RTMs hold placeholders for the face (the game drives it with separate mimic animations), so face bones
+        // follow the head instead; read them if face RTMs ever need previewing.
+        var animated = BoneNames.Select(n => lookup.TryGetValue(n, out var b) && b < matrices.Length && !IsFace(n)).ToArray();
+        var local = BoneNames.Select((n, i) => animated[i] ? matrices[lookup[n]] : Matrix4x4.Identity).ToArray();
+        var relative = animation?.Format.StartsWith("Binarised") == true;
         var byBone = new Matrix4x4[local.Length];
         var done = new bool[local.Length];
         Matrix4x4 Chain(int b)
@@ -266,7 +280,11 @@ internal sealed class RtmRig
             if (!done[b])
             {
                 var parent = Array.FindIndex(BoneNames, n => n.Equals(Parents[b], StringComparison.OrdinalIgnoreCase));
-                byBone[b] = parent >= 0 && parent != b && animation?.Format.StartsWith("Binarised") == true ? local[b] * Chain(parent) : local[b];
+                var hasParent = parent >= 0 && parent != b;
+                // A bone the animation leaves out (face bones in most RTMs) follows its parent.
+                byBone[b] = hasParent && relative ? local[b] * Chain(parent)
+                    : hasParent && !animated[b] ? Chain(parent)
+                    : local[b];
                 done[b] = true;
             }
             return byBone[b];
@@ -277,6 +295,9 @@ internal sealed class RtmRig
         }
         return byBone;
     }
+
+    private static bool IsFace(string bone) =>
+        bone.StartsWith("face_", StringComparison.OrdinalIgnoreCase) || bone.StartsWith("eye", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>Vertices posed by the animation's bone matrices (bones it doesn't move stay put).</summary>
     public Vector3[] Pose(RtmAnimation animation, Matrix4x4[] matrices)

@@ -23,6 +23,10 @@ internal static class RobloxExport
     // Studio's importer turns the model 180° about Y (to face -Z), so the animation is worked out in that turned space.
     private static readonly Matrix4x4 ToStudio = ToRoblox * Matrix4x4.CreateScale(-1, 1, -1);
 
+    // Arma's rest pose stands about a metre below the ground the animations use; Roblox gets it standing on the ground,
+    // and the animations take that lift back out.
+    private static Matrix4x4 Lift(RtmRig rig) => Matrix4x4.CreateTranslation(0, -rig.Triangles.Min(i => rig.Points[i].Y), 0);
+
     /// <summary>The rig the animation preview uses.</summary>
     public static string[] CurrentRig()
     {
@@ -88,7 +92,8 @@ internal static class RobloxExport
 
     public static void WriteRig(string target, RtmRig rig)
     {
-        var heads = Heads(rig).Select(h => Vector3.Transform(h, ToRoblox)).ToArray();
+        var place = Lift(rig) * ToRoblox;
+        var heads = Heads(rig).Select(h => Vector3.Transform(h, place)).ToArray();
         // Bone 0 is the extra root; Arma bones follow, shifted by one.
         var skin = new ModelExport.Skin
         {
@@ -113,7 +118,7 @@ internal static class RobloxExport
                 }
                 return local;
             }).ToArray();
-            var positions = used.Select(i => Vector3.Transform(rig.Points[i], ToRoblox)).Select(p => new Point3D(p.X, p.Y, p.Z)).ToList();
+            var positions = used.Select(i => Vector3.Transform(rig.Points[i], place)).Select(p => new Point3D(p.X, p.Y, p.Z)).ToList();
             var normals = new Vector3D[positions.Count];
             for (var i = 0; i + 2 < indices.Length; i += 3)
             {
@@ -146,12 +151,15 @@ internal static class RobloxExport
     /// </summary>
     public static void WriteAnimation(string target, RtmAnimation animation, RtmRig rig)
     {
-        var heads = Heads(rig).Select(h => Vector3.Transform(h, ToStudio)).ToArray();
+        var lift = Lift(rig);
+        var place = lift * ToStudio;
+        var heads = Heads(rig).Select(h => Vector3.Transform(h, place)).ToArray();
         var parents = Parents(rig);
-        Matrix4x4.Invert(ToStudio, out var fromStudio);
+        Matrix4x4.Invert(place, out var unplace);
         var poses = animation.Frames.Select(frame =>
         {
-            var skins = rig.Skin(animation, frame).Select(m => fromStudio * m * ToStudio).ToArray();
+            // Rest vertex (placed) -> Arma rest -> Arma pose; the pose is already on the animation's ground, so no lift back.
+            var skins = rig.Skin(animation, frame).Select(m => unplace * m * ToStudio).ToArray();
             return skins.Select((s, b) =>
             {
                 var parent = parents[b] >= 0 ? skins[parents[b]] : Matrix4x4.Identity;
