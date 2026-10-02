@@ -20,6 +20,8 @@ internal static class RobloxExport
     // 1 stud = 28 cm (Roblox's avatar scale). The FBX declares 28 cm units, so the importer lands on studs whether it reads the units or not.
     private const float Studs = 1 / 0.28f;
     private static readonly Matrix4x4 ToRoblox = Matrix4x4.CreateScale(Studs, Studs, -Studs);
+    // Studio's importer turns the model 180° about Y (to face -Z), so the animation is worked out in that turned space.
+    private static readonly Matrix4x4 ToStudio = ToRoblox * Matrix4x4.CreateScale(-1, 1, -1);
 
     /// <summary>The rig the animation preview uses.</summary>
     public static string[] CurrentRig()
@@ -144,12 +146,12 @@ internal static class RobloxExport
     /// </summary>
     public static void WriteAnimation(string target, RtmAnimation animation, RtmRig rig)
     {
-        var heads = Heads(rig).Select(h => Vector3.Transform(h, ToRoblox)).ToArray();
+        var heads = Heads(rig).Select(h => Vector3.Transform(h, ToStudio)).ToArray();
         var parents = Parents(rig);
-        Matrix4x4.Invert(ToRoblox, out var fromRoblox);
+        Matrix4x4.Invert(ToStudio, out var fromStudio);
         var poses = animation.Frames.Select(frame =>
         {
-            var skins = rig.Skin(animation, frame).Select(m => fromRoblox * m * ToRoblox).ToArray();
+            var skins = rig.Skin(animation, frame).Select(m => fromStudio * m * ToStudio).ToArray();
             return skins.Select((s, b) =>
             {
                 var parent = parents[b] >= 0 ? skins[parents[b]] : Matrix4x4.Identity;
