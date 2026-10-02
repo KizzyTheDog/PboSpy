@@ -654,7 +654,12 @@ internal static class ModelExport
         var header = new FbxNode("FBXHeaderExtension");
         header.Add("FBXHeaderVersion", 1003);
         header.Add("FBXVersion", 7400);
+        header.Add("EncryptionType", 0);
         header.Add("Creator", "PboSpy");
+        // Autodesk's reader wants SceneInfo even when it says nothing.
+        var sceneInfo = header.Add("SceneInfo", Named("GlobalInfo", "SceneInfo"), "UserData");
+        sceneInfo.Add("Type", "UserData");
+        sceneInfo.Add("Version", 100);
         var global = new FbxNode("GlobalSettings");
         global.Add("Version", 1000);
         var globalProps = global.Add("Properties70");
@@ -679,7 +684,11 @@ internal static class ModelExport
             bone.Add("Version", 232);
             var parent = skin.Parents[b];
             var local = parent >= 0 ? skin.Heads[b] - skin.Heads[parent] : skin.Heads[b];
-            bone.Add("Properties70").Add("P", "Lcl Translation", "Lcl Translation", "", "A", local.X, local.Y, local.Z);
+            var boneProps = bone.Add("Properties70");
+            boneProps.Add("P", "Lcl Translation", "Lcl Translation", "", "A", local.X, local.Y, local.Z);
+            // Without these Autodesk's reader doesn't tie the node to its attribute (-1 = none) and imports nothing.
+            boneProps.Add("P", "DefaultAttributeIndex", "int", "Integer", "", 0);
+            boneProps.Add("P", "InheritType", "enum", "", "", 1);
             links.Add("C", "OO", attribute, id);
             bindPose.Add((id, Moved(skin.Heads[b])));
         }
@@ -783,6 +792,11 @@ internal static class ModelExport
             }
             var node = objects.Add("Model", model, Named(name, "Model"), "Mesh");
             node.Add("Version", 232);
+            var nodeProps = node.Add("Properties70");
+            nodeProps.Add("P", "DefaultAttributeIndex", "int", "Integer", "", 0);
+            nodeProps.Add("P", "InheritType", "enum", "", "", 1);
+            node.Add("MultiLayer", 0);
+            node.Add("MultiTake", 0);
             node.Add("Shading", true);
             node.Add("Culling", "CullingOff");
             links.Add("C", "OO", model, 0L);
