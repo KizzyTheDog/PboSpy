@@ -850,7 +850,27 @@ internal static class ModelExport
         file.Write((byte)0x1A);
         file.Write((byte)0);
         file.Write(7400u);
-        foreach (var root in new[] { header, global, objects, links })
+        // Autodesk's reader (Roblox Studio, Maya) refuses a binary file unless FileId and CreationTime match the footer below;
+        // this is the known-good pair Blender writes too.
+        var fileId = new FbxNode("FileId", new byte[] { 0x28, 0xb3, 0x2a, 0xeb, 0xb6, 0x24, 0xcc, 0xc2, 0xbf, 0xc8, 0xb0, 0x2a, 0xa9, 0x2b, 0xfc, 0xf1 });
+        var created = new FbxNode("CreationTime", "1970-01-01 10:00:00:000");
+        var creator = new FbxNode("Creator", "PboSpy");
+        var documents = new FbxNode("Documents");
+        documents.Add("Count", 1);
+        var document = documents.Add("Document", next++, "Scene", "Scene");
+        document.Add("RootNode", 0L);
+        var definitions = new FbxNode("Definitions");
+        definitions.Add("Version", 100);
+        var types = objects.Children.GroupBy(c => c.Name).ToList();
+        definitions.Add("Count", objects.Children.Count + 1);
+        definitions.Add("ObjectType", "GlobalSettings").Add("Count", 1);
+        foreach (var type in types)
+        {
+            definitions.Add("ObjectType", type.Key).Add("Count", type.Count());
+        }
+        var takes = new FbxNode("Takes");
+        takes.Add("Current", "");
+        foreach (var root in new[] { header, fileId, created, creator, global, documents, new FbxNode("References"), definitions, objects, links, takes })
         {
             WriteNode(file, root);
         }
@@ -911,6 +931,11 @@ internal static class ModelExport
                         file.Write(d);
                     }
                     break;
+                case byte[] raw:
+                    file.Write((byte)'R');
+                    file.Write((uint)raw.Length);
+                    file.Write(raw);
+                    break;
                 case int[] ints:
                     file.Write((byte)'i');
                     file.Write((uint)ints.Length);
@@ -930,6 +955,10 @@ internal static class ModelExport
             {
                 WriteNode(file, child);
             }
+            file.Write(new byte[13]);
+        }
+        else if (node.Props.Count == 0)
+        {
             file.Write(new byte[13]);
         }
         var end = file.BaseStream.Position;
