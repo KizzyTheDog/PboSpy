@@ -34,11 +34,15 @@ internal static class RobloxExport
         return string.IsNullOrWhiteSpace(saved) ? RtmRig.BuiltIn[0].Paths : saved.Split('|');
     }
 
+    // Fully transparent slots (#(argb,8,8,3)color(0,0,0,0), unused insignia and the like) are never seen in the game.
+    private static IEnumerable<(string Texture, int[] Triangles)> Shown(RtmRig rig) =>
+        rig.Groups.Where(g => !TextureResolver.IsInvisible(g.Texture));
+
     /// <summary>One MeshPart per texture, named after it.</summary>
     public static string[] MeshNames(RtmRig rig)
     {
         var names = new List<string>();
-        foreach (var (texture, _) in rig.Groups)
+        foreach (var (texture, _) in Shown(rig))
         {
             var stem = string.IsNullOrWhiteSpace(texture) || TextureResolver.IsProcedural(texture) ? "Body" : Path.GetFileNameWithoutExtension(texture.Replace('\\', '/').Split('/').Last());
             stem = new string(stem.Select(c => char.IsLetterOrDigit(c) || c == '_' ? c : '_').ToArray());
@@ -105,7 +109,7 @@ internal static class RobloxExport
         };
         var parts = new List<ModelPart>();
         var names = MeshNames(rig);
-        foreach (var ((texture, triangles), name) in rig.Groups.Zip(names))
+        foreach (var ((texture, triangles), name) in Shown(rig).Zip(names))
         {
             var map = new Dictionary<int, int>();
             var used = new List<int>();

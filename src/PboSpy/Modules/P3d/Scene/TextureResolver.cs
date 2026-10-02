@@ -535,7 +535,15 @@ internal sealed class TextureResolver
     // Plain white procedural is the usual placeholder on decal / number slots that scripts fill in (blank by default).
     public static bool IsInvisible(string texture) =>
         Path.GetFileNameWithoutExtension(Normalize(texture)) is "empty" or "empty_ca" or "clear_empty" or "bis_klan"
-        || IsProcedural(texture) && ParseProcedural(texture) == Colors.White;
+        || IsProcedural(texture) && (ParseProcedural(texture) == Colors.White || IsClear(texture));
+
+    // color(r,g,b,0): fully transparent, so nothing is drawn.
+    private static bool IsClear(string texture)
+    {
+        var match = ProceduralColor.Match(texture);
+        var parts = match.Success ? match.Groups[1].Value.Split(',') : Array.Empty<string>();
+        return parts.Length >= 4 && float.TryParse(parts[3].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out var alpha) && alpha == 0;
+    }
 
     // Only _ca style textures are meant to be see-through; other suffixes store data in alpha.
     public static bool HasAlpha(string key)
