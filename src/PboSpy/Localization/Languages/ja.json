@@ -687,5 +687,8 @@
   "P3dView.ViewCorner": "斜め",
   "P3D.Main.Compact": "ファイルを小さく",
   "P3D.Main.CompactTip": "何も選択していない名前付き選択を省きます（約 15% 小さくなり、失われるものはありません）。",
-  "P3D.Core.LogDroppedEmpty": "空の選択を {0} 個削除: {1} MB → {2} MB。"
+  "P3D.Core.LogDroppedEmpty": "空の選択を {0} 個削除: {1} MB → {2} MB。",
+  "Rtm.Roblox": "Roblox に書き出す (リグ + アニメーション)",
+  "Rtm.RobloxShort": "Roblox…",
+  "Rtm.RobloxTip": "リグをスキン付き FBX (Studio の 3D インポーターで読み込み) として、アニメーションをそれ用の KeyframeSequence .rbxmx として保存します"
 }

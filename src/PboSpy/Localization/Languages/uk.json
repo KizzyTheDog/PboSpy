@@ -687,5 +687,8 @@
   "P3dView.ViewCorner": "Кут",
   "P3D.Main.Compact": "Менший файл",
   "P3D.Main.CompactTip": "Не зберігати порожні іменовані виділення (приблизно на 15% менше, нічого не втрачається).",
-  "P3D.Core.LogDroppedEmpty": "Вилучено порожніх виділень: {0}; {1} МБ → {2} МБ."
+  "P3D.Core.LogDroppedEmpty": "Вилучено порожніх виділень: {0}; {1} МБ → {2} МБ.",
+  "Rtm.Roblox": "Експорт у Roblox (риг + анімація)",
+  "Rtm.RobloxShort": "Roblox…",
+  "Rtm.RobloxTip": "Зберігає риг як FBX зі скінінгом (імпортуйте через 3D Importer у Studio) і анімацію як KeyframeSequence .rbxmx для нього"
 }

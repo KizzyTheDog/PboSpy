@@ -687,5 +687,8 @@
   "P3dView.ViewCorner": "Narożnik",
   "P3D.Main.Compact": "Mniejszy plik",
   "P3D.Main.CompactTip": "Pomiń puste nazwane selekcje (ok. 15% mniej, nic nie ginie).",
-  "P3D.Core.LogDroppedEmpty": "Usunięto {0} pustych selekcji: {1} MB → {2} MB."
+  "P3D.Core.LogDroppedEmpty": "Usunięto {0} pustych selekcji: {1} MB → {2} MB.",
+  "Rtm.Roblox": "Eksportuj do Roblox (rig + animacja)",
+  "Rtm.RobloxShort": "Roblox…",
+  "Rtm.RobloxTip": "Zapisuje rig jako FBX ze skinningiem (zaimportuj importerem 3D w Studio) i animację jako KeyframeSequence .rbxmx do niego"
 }

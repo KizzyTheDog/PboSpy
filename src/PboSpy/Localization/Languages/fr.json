@@ -687,5 +687,8 @@
   "P3dView.ViewCorner": "Coin",
   "P3D.Main.Compact": "Fichier plus léger",
   "P3D.Main.CompactTip": "Omettre les sélections nommées vides (environ 15 % plus petit, rien n'est perdu).",
-  "P3D.Core.LogDroppedEmpty": "{0} sélections vides retirées : {1} Mo → {2} Mo."
+  "P3D.Core.LogDroppedEmpty": "{0} sélections vides retirées : {1} Mo → {2} Mo.",
+  "Rtm.Roblox": "Exporter vers Roblox (rig + animation)",
+  "Rtm.RobloxShort": "Roblox…",
+  "Rtm.RobloxTip": "Enregistre le rig en FBX avec skinning (à importer avec l'importateur 3D de Studio) et l'animation en KeyframeSequence .rbxmx qui joue dessus"
 }

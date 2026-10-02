@@ -687,5 +687,8 @@
   "P3dView.ViewCorner": "斜角",
   "P3D.Main.Compact": "更小的文件",
   "P3D.Main.CompactTip": "省略未选中任何内容的命名选择（约小 15%，不丢失任何内容）。",
-  "P3D.Core.LogDroppedEmpty": "已移除 {0} 个空选择：{1} MB → {2} MB。"
+  "P3D.Core.LogDroppedEmpty": "已移除 {0} 个空选择：{1} MB → {2} MB。",
+  "Rtm.Roblox": "导出到 Roblox（骨架 + 动画）",
+  "Rtm.RobloxShort": "Roblox…",
+  "Rtm.RobloxTip": "将骨架保存为带蒙皮的 FBX（用 Studio 的 3D 导入器导入），将动画保存为对应的 KeyframeSequence .rbxmx"
 }

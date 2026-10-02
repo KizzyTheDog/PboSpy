@@ -293,6 +293,14 @@ public partial class RtmPreviewView : UserControl
         ApplyTextures();
     }
 
+    private async void OnRoblox(object sender, RoutedEventArgs e)
+    {
+        if ((DataContext as RtmPreviewViewModel)?.Selected?.File is { } file)
+        {
+            await RobloxExport.Export(new[] { file });
+        }
+    }
+
     private void OnReset(object sender, RoutedEventArgs e)
     {
         _yaw = 200;

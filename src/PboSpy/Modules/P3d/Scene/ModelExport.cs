@@ -1,4 +1,5 @@
 using System.IO;
+using System.Windows.Media.Media3D;
 using System.Text.Json.Nodes;
 using System.Windows.Media.Imaging;
 
@@ -21,6 +22,23 @@ internal static class ModelExport
     }
 
     public static readonly string[] Formats = { ".glb", ".gltf", ".fbx", ".obj" };
+
+    /// <summary>Bones for a skinned FBX: heads in the file's space, parent index (-1 = none), and per part each vertex's bones.</summary>
+    public sealed class Skin
+    {
+        public string[] Bones;
+        public int[] Parents;
+        public Vector3D[] Heads;
+        public Dictionary<ModelPart, (int Bone, float Weight)[][]> Weights;
+        public double UnitCentimetres = 100;
+    }
+
+    /// <summary>One skinned FBX object per part, named after part.Owner (Roblox imports it as MeshParts with Bones).</summary>
+    public static void WriteSkinned(string target, IReadOnlyList<ModelPart> parts, TextureResolver resolver, Skin skin, int maxSize = 2048)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(target));
+        WriteFbx(target, parts.Select(p => new List<ModelPart> { p }).ToList(), resolver, maxSize, skin);
+    }
 
     /// <summary>
     /// The extension picks the format. splitAt > 0 cuts any part with more triangles into pieces (Roblox takes 20,000 per MeshPart).
@@ -610,7 +628,7 @@ internal static class ModelExport
         }
     }
 
-    private static void WriteFbx(string target, List<List<ModelPart>> groups, TextureResolver resolver, int maxSize)
+    private static void WriteFbx(string target, List<List<ModelPart>> groups, TextureResolver resolver, int maxSize, Skin skin = null)
     {
         var parts = groups.SelectMany(g => g).ToList();
         var folder = Path.GetDirectoryName(target);
@@ -644,11 +662,31 @@ internal static class ModelExport
         {
             globalProps.Add("P", name, "int", "Integer", "", value);
         }
-        globalProps.Add("P", "UnitScaleFactor", "double", "Number", "", 100.0);
+        globalProps.Add("P", "UnitScaleFactor", "double", "Number", "", skin?.UnitCentimetres ?? 100.0);
 
         var objects = new FbxNode("Objects");
         var links = new FbxNode("Connections");
         long next = 1000000;
+        static double[] Moved(Vector3D t) => new[] { 1.0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, t.X, t.Y, t.Z, 1 };
+        var boneIds = new long[skin?.Bones.Length ?? 0];
+        var bindPose = new List<(long Id, double[] Matrix)>();
+        for (var b = 0; b < boneIds.Length; b++)
+        {
+            var id = boneIds[b] = next++;
+            var attribute = next++;
+            objects.Add("NodeAttribute", attribute, Named(skin.Bones[b], "NodeAttribute"), "LimbNode").Add("TypeFlags", "Skeleton");
+            var bone = objects.Add("Model", id, Named(skin.Bones[b], "Model"), "LimbNode");
+            bone.Add("Version", 232);
+            var parent = skin.Parents[b];
+            var local = parent >= 0 ? skin.Heads[b] - skin.Heads[parent] : skin.Heads[b];
+            bone.Add("Properties70").Add("P", "Lcl Translation", "Lcl Translation", "", "A", local.X, local.Y, local.Z);
+            links.Add("C", "OO", attribute, id);
+            bindPose.Add((id, Moved(skin.Heads[b])));
+        }
+        for (var b = 0; b < boneIds.Length; b++)
+        {
+            links.Add("C", "OO", boneIds[b], skin.Parents[b] >= 0 ? boneIds[skin.Parents[b]] : 0L);
+        }
         var materialIds = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
         foreach (var (key, maps) in materials)
         {
@@ -685,7 +723,7 @@ internal static class ModelExport
         }
         foreach (var (group, number) in groups.Select((g, i) => (g, i)))
         {
-            var name = ObjectName(group, materials, stem, number) + "_" + number;
+            var name = skin != null ? group[0].Owner : ObjectName(group, materials, stem, number) + "_" + number;
             var geometry = next++;
             var model = next++;
             // Joined parts: one mesh, and each triangle says which of the object's materials it uses.
@@ -752,6 +790,58 @@ internal static class ModelExport
             foreach (var key in used)
             {
                 links.Add("C", "OO", materialIds[key], model);
+            }
+            if (skin != null && skin.Weights.TryGetValue(group[0], out var weights))
+            {
+                bindPose.Add((model, Moved(default)));
+                var deformer = next++;
+                var skinNode = objects.Add("Deformer", deformer, Named("", "Deformer"), "Skin");
+                skinNode.Add("Version", 101);
+                skinNode.Add("Link_DeformAcuracy", 50.0);
+                links.Add("C", "OO", deformer, geometry);
+                for (var b = 0; b < boneIds.Length; b++)
+                {
+                    var indexes = new List<int>();
+                    var amounts = new List<double>();
+                    for (var v = 0; v < weights.Length; v++)
+                    {
+                        foreach (var (bone, weight) in weights[v])
+                        {
+                            if (bone == b && weight > 0)
+                            {
+                                indexes.Add(v);
+                                amounts.Add(weight);
+                            }
+                        }
+                    }
+                    if (indexes.Count == 0)
+                    {
+                        continue;
+                    }
+                    var cluster = next++;
+                    var clusterNode = objects.Add("Deformer", cluster, Named(skin.Bones[b], "SubDeformer"), "Cluster");
+                    clusterNode.Add("Version", 100);
+                    clusterNode.Add("UserData", "", "");
+                    clusterNode.Add("Indexes", indexes.ToArray());
+                    clusterNode.Add("Weights", amounts.ToArray());
+                    clusterNode.Add("Transform", Moved(-skin.Heads[b]));
+                    clusterNode.Add("TransformLink", Moved(skin.Heads[b]));
+                    links.Add("C", "OO", cluster, deformer);
+                    links.Add("C", "OO", boneIds[b], cluster);
+                }
+            }
+        }
+        if (bindPose.Count > 0)
+        {
+            var pose = objects.Add("Pose", next++, Named("BindPose", "Pose"), "BindPose");
+            pose.Add("Type", "BindPose");
+            pose.Add("Version", 100);
+            pose.Add("NbPoseNodes", bindPose.Count);
+            foreach (var (id, matrix) in bindPose)
+            {
+                var node = pose.Add("PoseNode");
+                node.Add("Node", id);
+                node.Add("Matrix", matrix);
             }
         }
 

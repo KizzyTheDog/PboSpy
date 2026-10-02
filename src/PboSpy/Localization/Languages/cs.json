@@ -687,5 +687,8 @@
   "P3dView.ViewCorner": "Roh",
   "P3D.Main.Compact": "Menší soubor",
   "P3D.Main.CompactTip": "Vynechat prázdné pojmenované výběry (asi o 15 % menší, nic se neztratí).",
-  "P3D.Core.LogDroppedEmpty": "Odstraněno {0} prázdných výběrů: {1} MB → {2} MB."
+  "P3D.Core.LogDroppedEmpty": "Odstraněno {0} prázdných výběrů: {1} MB → {2} MB.",
+  "Rtm.Roblox": "Exportovat do Robloxu (rig + animace)",
+  "Rtm.RobloxShort": "Roblox…",
+  "Rtm.RobloxTip": "Uloží rig jako FBX se skinningem (importujte 3D importérem ve Studiu) a animaci jako KeyframeSequence .rbxmx pro něj"
 }

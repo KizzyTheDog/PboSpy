@@ -687,5 +687,8 @@
   "P3dView.ViewCorner": "Ecke",
   "P3D.Main.Compact": "Kleinere Datei",
   "P3D.Main.CompactTip": "Benannte Auswahlen ohne Inhalt weglassen (etwa 15 % kleiner, nichts geht verloren).",
-  "P3D.Core.LogDroppedEmpty": "{0} leere Auswahlen entfernt: {1} MB → {2} MB."
+  "P3D.Core.LogDroppedEmpty": "{0} leere Auswahlen entfernt: {1} MB → {2} MB.",
+  "Rtm.Roblox": "Nach Roblox exportieren (Rig + Animation)",
+  "Rtm.RobloxShort": "Roblox…",
+  "Rtm.RobloxTip": "Speichert das Rig als FBX mit Skinning (in Studio mit dem 3D-Importer importieren) und die Animation als KeyframeSequence-.rbxmx dafür"
 }

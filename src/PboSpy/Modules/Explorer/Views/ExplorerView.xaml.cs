@@ -206,6 +206,14 @@ public partial class ExplorerView : UserControl
         }
     }
 
+    private async void OnMenuRoblox(object sender, RoutedEventArgs e)
+    {
+        if (ViewModel != null)
+        {
+            await ViewModel.ExportRoblox();
+        }
+    }
+
     private void OnMenuP3dRvmats(object sender, RoutedEventArgs e) => ViewModel?.SendToP3dTools(P3dAction.ExtractRvmats);
 
     private void OnMenuP3dCfg(object sender, RoutedEventArgs e) => ViewModel?.SendToP3dTools(P3dAction.ExtractModelCfg);
@@ -238,6 +246,7 @@ public partial class ExplorerView : UserControl
         Show(MenuCopyPathInPbo, selection.Any(i => i is not PboFile && i.Parent != null && RootIsPbo(i)));
         Show(MenuP3d, anything && vm.ContextHas(".p3d"));
         Show(MenuPbr, anything && vm.ContextHasPbrTextures());
+        Show(MenuRoblox, anything && vm.ContextHas(".rtm"));
         Show(MenuSelectFolder, single != null);
         Show(MenuSelectType, single != null && single.Children == null);
         Show(MenuClearSelection, vm.SelectedItems.Count > 0);

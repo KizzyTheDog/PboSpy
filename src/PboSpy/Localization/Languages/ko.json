@@ -687,5 +687,8 @@
   "P3dView.ViewCorner": "모서리",
   "P3D.Main.Compact": "파일 줄이기",
   "P3D.Main.CompactTip": "아무것도 선택하지 않은 이름 있는 선택을 뺍니다(약 15% 작아지며 잃는 것 없음).",
-  "P3D.Core.LogDroppedEmpty": "빈 선택 {0}개 제거: {1} MB → {2} MB."
+  "P3D.Core.LogDroppedEmpty": "빈 선택 {0}개 제거: {1} MB → {2} MB.",
+  "Rtm.Roblox": "Roblox로 내보내기 (리그 + 애니메이션)",
+  "Rtm.RobloxShort": "Roblox…",
+  "Rtm.RobloxTip": "리그를 스킨 FBX(Studio의 3D 가져오기로 가져오기)로, 애니메이션을 그에 맞는 KeyframeSequence .rbxmx로 저장합니다"
 }

@@ -687,5 +687,8 @@
   "P3dView.ViewCorner": "Köşe",
   "P3D.Main.Compact": "Daha küçük dosya",
   "P3D.Main.CompactTip": "Boş adlandırılmış seçimleri atla (yaklaşık %15 daha küçük, hiçbir şey kaybolmaz).",
-  "P3D.Core.LogDroppedEmpty": "{0} boş seçim kaldırıldı: {1} MB → {2} MB."
+  "P3D.Core.LogDroppedEmpty": "{0} boş seçim kaldırıldı: {1} MB → {2} MB.",
+  "Rtm.Roblox": "Roblox'a aktar (rig + animasyon)",
+  "Rtm.RobloxShort": "Roblox…",
+  "Rtm.RobloxTip": "Rig'i skinning'li FBX olarak (Studio'nun 3D İçe Aktarıcısı ile içe aktarın) ve animasyonu onun için KeyframeSequence .rbxmx olarak kaydeder"
 }

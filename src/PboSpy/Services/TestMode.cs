@@ -126,6 +126,15 @@ internal static class TestMode
                         await Task.Delay(16);
                     }
                     break;
+                case "roblox":
+                    // "roblox <rtm file>": writes the current rig and the animation into the test folder's roblox folder.
+                    var output = Path.Combine(Folder, "roblox");
+                    Directory.CreateDirectory(output);
+                    var rig = Modules.Rtm.RtmRig.Load(Modules.Rtm.RobloxExport.CurrentRig());
+                    Modules.Rtm.RobloxExport.WriteRig(Path.Combine(output, "rig.fbx"), rig);
+                    Modules.Rtm.RobloxExport.WriteAnimation(Path.Combine(output, Path.GetFileNameWithoutExtension(verb[1]) + ".rbxmx"),
+                        Modules.Rtm.RtmAnimation.Read(new Models.PhysicalFile(verb[1])), rig);
+                    break;
                 case "window" when verb[1] == "presets":
                     Modules.Presets.PresetsWindow.Open();
                     break;

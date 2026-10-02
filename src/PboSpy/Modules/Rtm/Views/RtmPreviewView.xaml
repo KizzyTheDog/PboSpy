@@ -28,6 +28,7 @@
                 <ToggleButton x:Name="TexturesButton" Style="{StaticResource PboSpy.Button}" Content="{loc:Tr P3dView.Textures}" Margin="6 0 0 0"
                               Click="OnTextures" ToolTip="{loc:Tr Rtm.TexturesTip}"/>
                 <Button Style="{StaticResource PboSpy.Button}" Content="{loc:Tr P3dView.ResetView}" Margin="6 0 0 0" Click="OnReset"/>
+                <Button Style="{StaticResource PboSpy.Button}" Content="{loc:Tr Rtm.RobloxShort}" Margin="6 0 0 0" Click="OnRoblox" ToolTip="{loc:Tr Rtm.RobloxTip}"/>
             </StackPanel>
             <Slider x:Name="PhaseSlider" Minimum="0" Maximum="1" VerticalAlignment="Center" Margin="12 0 0 0"
                     Visibility="{Binding ShowAnimation, Converter={StaticResource BoolToVis}}"

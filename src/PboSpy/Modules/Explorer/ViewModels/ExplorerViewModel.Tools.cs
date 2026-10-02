@@ -69,6 +69,9 @@ public partial class ExplorerViewModel
     }
 
     /// <summary>Each selected model as a textured GLB (first visual LOD, no proxies) in a folder the user picks.</summary>
+    public Task ExportRoblox() =>
+        PboSpy.Modules.Rtm.RobloxExport.Export(BulkExportService.Collect(ContextSelection, IsSelectable).Where(f => f.Extension == ".rtm").ToList());
+
     public Task ExportModels()
     {
         var files = BulkExportService.Collect(ContextSelection, IsSelectable).Where(f => f.Extension == ".p3d").ToList();

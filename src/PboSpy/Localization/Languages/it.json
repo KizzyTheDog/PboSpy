@@ -687,5 +687,8 @@
   "P3dView.ViewCorner": "Angolo",
   "P3D.Main.Compact": "File più piccolo",
   "P3D.Main.CompactTip": "Tralascia le selezioni con nome vuote (circa 15% in meno, nulla va perso).",
-  "P3D.Core.LogDroppedEmpty": "{0} selezioni vuote rimosse: {1} MB → {2} MB."
+  "P3D.Core.LogDroppedEmpty": "{0} selezioni vuote rimosse: {1} MB → {2} MB.",
+  "Rtm.Roblox": "Esporta in Roblox (rig + animazione)",
+  "Rtm.RobloxShort": "Roblox…",
+  "Rtm.RobloxTip": "Salva il rig come FBX con skinning (importalo con l'importatore 3D di Studio) e l'animazione come KeyframeSequence .rbxmx per esso"
 }

@@ -687,5 +687,8 @@
   "P3dView.ViewCorner": "Угол",
   "P3D.Main.Compact": "Меньший файл",
   "P3D.Main.CompactTip": "Не сохранять пустые именованные выделения (примерно на 15% меньше, ничего не теряется).",
-  "P3D.Core.LogDroppedEmpty": "Удалено пустых выделений: {0}; {1} МБ → {2} МБ."
+  "P3D.Core.LogDroppedEmpty": "Удалено пустых выделений: {0}; {1} МБ → {2} МБ.",
+  "Rtm.Roblox": "Экспорт в Roblox (риг + анимация)",
+  "Rtm.RobloxShort": "Roblox…",
+  "Rtm.RobloxTip": "Сохраняет риг как FBX со скинингом (импортируйте через 3D Importer в Studio) и анимацию как KeyframeSequence .rbxmx для него"
 }

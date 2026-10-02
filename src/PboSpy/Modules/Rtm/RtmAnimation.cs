@@ -249,8 +249,8 @@ internal sealed class RtmRig
         return File.Exists(candidate) || GameData.Find(candidate) != null ? candidate : "";
     }
 
-    /// <summary>Vertices posed by the animation's bone matrices (bones it doesn't move stay put).</summary>
-    public Vector3[] Pose(RtmAnimation animation, Matrix4x4[] matrices)
+    /// <summary>Each rig bone's final matrix (rest model space to posed model space) for one frame.</summary>
+    public Matrix4x4[] Skin(RtmAnimation animation, Matrix4x4[] matrices)
     {
         var lookup = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         for (var b = 0; b < (animation?.Bones.Length ?? 0); b++)
@@ -275,6 +275,13 @@ internal sealed class RtmRig
         {
             Chain(b);
         }
+        return byBone;
+    }
+
+    /// <summary>Vertices posed by the animation's bone matrices (bones it doesn't move stay put).</summary>
+    public Vector3[] Pose(RtmAnimation animation, Matrix4x4[] matrices)
+    {
+        var byBone = Skin(animation, matrices);
         var result = new Vector3[Points.Length];
         Parallel.For(0, Points.Length, i =>
         {

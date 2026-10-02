@@ -154,6 +154,7 @@
                         <MenuItem Header="{loc:Tr Explorer.Menu.OpenInP3d}" Click="OnMenuP3dOpen"/>
                     </MenuItem>
                     <MenuItem x:Name="MenuPbr" Header="{loc:Tr Explorer.Menu.Pbr}" Click="OnMenuPbr"/>
+                    <MenuItem x:Name="MenuRoblox" Header="{loc:Tr Rtm.Roblox}" ToolTip="{loc:Tr Rtm.RobloxTip}" Click="OnMenuRoblox"/>
                     <Separator/>
                     <MenuItem x:Name="MenuSelectFolder" Header="{loc:Tr Explorer.Menu.SelectFolder}" Click="OnMenuSelectFolder"/>
                     <MenuItem x:Name="MenuSelectType" Header="{loc:Tr Explorer.Menu.SelectType}" Click="OnMenuSelectType"/>
